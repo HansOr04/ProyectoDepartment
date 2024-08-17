@@ -1,8 +1,10 @@
-// UserForm.js
 import React, { useState, useEffect } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import "react-datepicker/dist/react-datepicker.css";
+import { TextField } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { createUser, updateUser, uploadUserImage } from '../../services/firebase';
 import {
   PageContainer,
@@ -11,7 +13,6 @@ import {
   Title,
   StyledField,
   StyledErrorMessage,
-  StyledDatePicker,
   SubmitButton,
   FileInputContainer,
   FileInputLabel,
@@ -106,12 +107,14 @@ const UserForm = ({ userId = null }) => {
               <StyledField type="text" name="lastName" placeholder="Last Name" />
               <StyledErrorMessage name="lastName" component="div" />
 
-              <StyledDatePicker
-                selected={values.birthDate}
-                onChange={date => setFieldValue('birthDate', date)}
-                dateFormat="dd/MM/yyyy"
-                placeholderText="Birth Date"
-              />
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <DatePicker
+                  label="Birth Date"
+                  value={values.birthDate}
+                  onChange={(date) => setFieldValue('birthDate', date)}
+                  renderInput={(params) => <TextField {...params} fullWidth />}
+                />
+              </LocalizationProvider>
               <StyledErrorMessage name="birthDate" component="div" />
 
               <FileInputContainer>
