@@ -1,72 +1,81 @@
-import { useFormik } from "formik";
-import * as Yup from "yup";
-import { useNavigate } from "react-router-dom";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { db } from "../../config/firebase";
+import React, { useState } from 'react';
+import { useAuth } from '../../contexts/authContext';
+import { useNavigate } from 'react-router-dom';
+import {
+  Container,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Box,
+  Alert,
+  CircularProgress
+} from '@mui/material';
 
-function LoginForm() {
+const LoginForm = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const { login, loading, error } = useAuth();
   const navigate = useNavigate();
-  const auth = getAuth(); // No es necesario pasar 'db' como argumento
 
-  const validationSchema = Yup.object({
-    email: Yup.string()
-      .email("Invalid email address")
-      .required("Email is required"),
-    password: Yup.string().required("Password is required"),
-  });
-
-  const formik = useFormik({
-    initialValues: {
-      email: "",
-      password: "",
-    },
-    validationSchema,
-    onSubmit: async (values) => {
-      try {
-        await signInWithEmailAndPassword(auth, values.email, values.password);
-        alert(`Welcome ${values.email}`);
-        navigate("/home");
-      } catch (error) {
-        alert("Invalid email or password");
-      }
-    },
-  });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await login(email, password);
+    if (!error) {
+      navigate('/');
+    }
+  };
 
   return (
-    <form onSubmit={formik.handleSubmit}>
-      <div>
-        <label htmlFor="email">Email:</label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          value={formik.values.email}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-        />
-        {formik.touched.email && formik.errors.email ? (
-          <span style={{ color: "red" }}>{formik.errors.email}</span>
-        ) : null}
-      </div>
-
-      <div>
-        <label htmlFor="password">Password:</label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          value={formik.values.password}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-        />
-        {formik.touched.password && formik.errors.password ? (
-          <span style={{ color: "red" }}>{formik.errors.password}</span>
-        ) : null}
-      </div>
-
-      <button type="submit">Login</button>
-    </form>
+    <Container component="main" maxWidth="xs">
+      <Paper elevation={3} sx={{ marginTop: 8, padding: 4 }}>
+        <Typography component="h1" variant="h5" align="center">
+          Login
+        </Typography>
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Email Address"
+            name="email"
+            autoComplete="email"
+            autoFocus
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={loading}
+          />
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Password"
+            type="password"
+            id="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
+          />
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            color="primary"
+            sx={{ mt: 3, mb: 2 }}
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : 'Sign In'}
+          </Button>
+        </Box>
+      </Paper>
+    </Container>
   );
-}
+};
 
 export default LoginForm;

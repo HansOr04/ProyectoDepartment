@@ -1,12 +1,34 @@
 import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { db, storage } from "../config/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { db, storage, auth } from "../config/firebase";
 
 // Definir el nombre de la colección que vamos a utilizar de esa base de datos
 const collectionName = "users";
 
 // Definir la referencia a la colección que vamos a utilizar
 const usersCollectionRef = collection(db, collectionName);
+
+// AUTHENTICATE
+const authenticateUser = async (email, password) => {
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        // Obtener datos adicionales del usuario desde Firestore
+        const userDoc = await getDoc(doc(db, collectionName, user.uid));
+        
+        if (userDoc.exists()) {
+            return { uid: user.uid, ...userDoc.data() };
+        } else {
+            console.error("User document not found in Firestore");
+            return null;
+        }
+    } catch (error) {
+        console.error("Error authenticating user:", error);
+        throw new Error("Failed to authenticate user");
+    }
+};
 
 // CREATE
 const createUser = async (user) => {
@@ -94,4 +116,4 @@ const uploadUserImage = async (userId, imageFile) => {
     }
 };
 
-export { getUsers, createUser, updateUser, deleteUser, getUserByID, uploadUserImage };
+export { authenticateUser, getUsers, createUser, updateUser, deleteUser, getUserByID, uploadUserImage };
