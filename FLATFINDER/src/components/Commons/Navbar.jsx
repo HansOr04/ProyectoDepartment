@@ -28,15 +28,15 @@ function Navbar() {
     const fetchAvatar = async () => {
       console.log("Fetching avatar for user:", user);
       setAvatarLoading(true);
-      if (user && user.photoURL) {
-        console.log("User photoURL:", user.photoURL);
-        if (user.photoURL.startsWith('http')) {
+      if (user && user.imageUid) {
+        console.log("User photoURL:", user.imageUid);
+        if (user.imageUid.startsWith('http')) {
           console.log("Setting direct URL as avatar");
-          setUserAvatar(user.photoURL);
+          setUserAvatar(user.imageUid);
         } else {
           try {
             console.log("Attempting to get download URL from Firebase Storage");
-            const url = await getDownloadURL(ref(storage, user.photoURL));
+            const url = await getDownloadURL(ref(storage, user.imageUid));
             console.log("Download URL obtained:", url);
             setUserAvatar(url);
           } catch (error) {
