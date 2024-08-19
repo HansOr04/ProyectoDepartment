@@ -1,5 +1,5 @@
 import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes } from "firebase/storage";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { db, storage, auth } from "../config/firebase";
 
@@ -93,23 +93,23 @@ const deleteUser = async (id) => {
     }
 };
 
-// UPLOAD IMAGE and LINK TO USER
+// UPLOAD IMAGE and RETURN UID
 const uploadUserImage = async (userId, imageFile) => {
     try {
         // Crear una referencia en Storage para la imagen
         const imageRef = ref(storage, `userImages/${userId}/${imageFile.name}`);
         
         // Subir la imagen a Storage
-        const snapshot = await uploadBytes(imageRef, imageFile);
+        await uploadBytes(imageRef, imageFile);
         
-        // Obtener la URL de descarga de la imagen
-        const downloadURL = await getDownloadURL(snapshot.ref);
+        // Crear el UID de la imagen (ruta relativa en el storage)
+        const imageUid = `userImages/${userId}/${imageFile.name}`;
         
-        // Actualizar el documento del usuario con la URL de la imagen
+        // Actualizar el documento del usuario con el UID de la imagen
         const userRef = doc(db, collectionName, userId);
-        await updateDoc(userRef, { imageUrl: downloadURL });
+        await updateDoc(userRef, { imageUid: imageUid });
 
-        return downloadURL;
+        return imageUid;
     } catch (error) {
         console.error("Error uploading image:", error);
         throw new Error("Failed to upload image and link to user");

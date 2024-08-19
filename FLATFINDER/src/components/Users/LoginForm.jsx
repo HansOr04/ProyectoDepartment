@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../contexts/authContext';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -11,18 +10,31 @@ import {
   Alert,
   CircularProgress
 } from '@mui/material';
+import { authenticateUser } from '../../services/firebase';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, loading, error } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login(email, password);
-    if (!error) {
-      navigate('/');
+    setLoading(true);
+    setError(null);
+    try {
+      const user = await authenticateUser(email, password);
+      if (user) {
+        // Aquí podrías guardar el usuario en el estado global de tu aplicación si lo necesitas
+        navigate('/'); // Redirige al usuario a la página principal después del inicio de sesión exitoso
+      } else {
+        setError('Failed to authenticate. Please check your credentials.');
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 

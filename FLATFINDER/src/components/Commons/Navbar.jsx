@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   AppBar,
@@ -12,10 +12,39 @@ import {
   MenuItem,
 } from "@mui/material";
 import { Home, Add, Favorite, Apartment } from "@mui/icons-material";
+import { auth, storage } from '../../config/firebase';
+import { ref, getDownloadURL } from 'firebase/storage';
 
 function Navbar() {
   const [anchorEl, setAnchorEl] = useState(null);
+  const [userAvatar, setUserAvatar] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        if (user.photoURL) {
+          if (user.photoURL.startsWith('http')) {
+            setUserAvatar(user.photoURL);
+          } else {
+            try {
+              const url = await getDownloadURL(ref(storage, user.photoURL));
+              setUserAvatar(url);
+            } catch (error) {
+              console.error("Error getting avatar URL:", error);
+              setUserAvatar(null);
+            }
+          }
+        } else {
+          setUserAvatar(null);
+        }
+      } else {
+        setUserAvatar(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleAvatarClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -47,10 +76,22 @@ function Navbar() {
 
   const handleProfileClick = () => {
     navigate("/profile");
+    handleMenuClose();
   };
 
   const handleAllUsersClick = () => {
     navigate("/all-users");
+    handleMenuClose();
+  };
+
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      navigate("/login");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+    handleMenuClose();
   };
 
   return (
@@ -100,7 +141,7 @@ function Navbar() {
         >
           <Avatar
             alt="User Avatar"
-            src="https://img.freepik.com/psd-gratis/ilustracion-3d-avatar-o-perfil-humano_23-2150671122.jpg"
+            src={userAvatar || "https://img.freepik.com/psd-gratis/ilustracion-3d-avatar-o-perfil-humano_23-2150671122.jpg"}
           />
         </IconButton>
         <Menu
@@ -110,6 +151,7 @@ function Navbar() {
         >
           <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
           <MenuItem onClick={handleAllUsersClick}>All Users</MenuItem>
+          <MenuItem onClick={handleLogout}>Logout</MenuItem>
         </Menu>
       </Toolbar>
     </AppBar>
