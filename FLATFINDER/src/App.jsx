@@ -11,6 +11,7 @@ import AllUsersPage from './pages/AllUsersPage';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
 import { Outlet } from 'react-router-dom';
+import ProtectedRoute from './components/Commons/ProtectRoute';
 
 // Componente para el layout con Navbar
 const Layout = () => {
@@ -31,11 +32,13 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />
-            <Route path="/new-flat" element={<NewFlatPage />} />
-            <Route path="/favorite-flats" element={<FavouritesPage />} />
-            <Route path="/my-flats" element={<MyFlatsPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/all-users" element={<AllUsersPage />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/new-flat" element={<NewFlatPage />} />
+              <Route path="/favorite-flats" element={<FavouritesPage />} />
+              <Route path="/my-flats" element={<MyFlatsPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/all-users" element={<AllUsersPage />} />
+            </Route>
           </Route>
         </Routes>
       </Router>
