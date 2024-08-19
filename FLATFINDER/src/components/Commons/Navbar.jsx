@@ -159,7 +159,7 @@ function Navbar() {
           ) : (
             <Avatar
               alt="User Avatar"
-              src={userAvatar || "https://img.freepik.com/psd-gratis/ilustracion-3d-avatar-o-perfil-humano_23-2150671122.jpg"}
+              src={userAvatar}
             />
           )}
         </IconButton>
