@@ -10,41 +10,49 @@ import {
   Button,
   Menu,
   MenuItem,
+  CircularProgress,
 } from "@mui/material";
 import { Home, Add, Favorite, Apartment } from "@mui/icons-material";
-import { auth, storage } from '../../config/firebase';
+import { storage } from '../../config/firebase';
 import { ref, getDownloadURL } from 'firebase/storage';
+import { useAuth } from '../../contexts/authContext';
 
 function Navbar() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [userAvatar, setUserAvatar] = useState(null);
+  const [avatarLoading, setAvatarLoading] = useState(true);
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        if (user.photoURL) {
-          if (user.photoURL.startsWith('http')) {
-            setUserAvatar(user.photoURL);
-          } else {
-            try {
-              const url = await getDownloadURL(ref(storage, user.photoURL));
-              setUserAvatar(url);
-            } catch (error) {
-              console.error("Error getting avatar URL:", error);
-              setUserAvatar(null);
-            }
-          }
+    const fetchAvatar = async () => {
+      console.log("Fetching avatar for user:", user);
+      setAvatarLoading(true);
+      if (user && user.photoURL) {
+        console.log("User photoURL:", user.photoURL);
+        if (user.photoURL.startsWith('http')) {
+          console.log("Setting direct URL as avatar");
+          setUserAvatar(user.photoURL);
         } else {
-          setUserAvatar(null);
+          try {
+            console.log("Attempting to get download URL from Firebase Storage");
+            const url = await getDownloadURL(ref(storage, user.photoURL));
+            console.log("Download URL obtained:", url);
+            setUserAvatar(url);
+          } catch (error) {
+            console.error("Error getting avatar URL:", error);
+            setUserAvatar(null);
+          }
         }
       } else {
+        console.log("No photoURL found, setting avatar to null");
         setUserAvatar(null);
       }
-    });
+      setAvatarLoading(false);
+    };
 
-    return () => unsubscribe();
-  }, []);
+    fetchAvatar();
+  }, [user]);
 
   const handleAvatarClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -86,13 +94,20 @@ function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await auth.signOut();
+      await logout();
       navigate("/login");
     } catch (error) {
       console.error("Error signing out:", error);
     }
     handleMenuClose();
   };
+
+  if (!user) {
+    console.log("No user found, not rendering Navbar");
+    return null;
+  }
+
+  console.log("Rendering Navbar for user:", user.email);
 
   return (
     <AppBar position="static" sx={{ backgroundColor: "#fff8ec", color: "#114C5F" }}>
@@ -139,10 +154,14 @@ function Navbar() {
           sx={{ color: "#114C5F" }}
           onClick={handleAvatarClick}
         >
-          <Avatar
-            alt="User Avatar"
-            src={userAvatar || "https://img.freepik.com/psd-gratis/ilustracion-3d-avatar-o-perfil-humano_23-2150671122.jpg"}
-          />
+          {avatarLoading ? (
+            <CircularProgress size={40} />
+          ) : (
+            <Avatar
+              alt="User Avatar"
+              src={userAvatar || "https://img.freepik.com/psd-gratis/ilustracion-3d-avatar-o-perfil-humano_23-2150671122.jpg"}
+            />
+          )}
         </IconButton>
         <Menu
           anchorEl={anchorEl}

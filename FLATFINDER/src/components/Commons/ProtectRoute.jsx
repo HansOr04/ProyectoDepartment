@@ -3,14 +3,19 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../contexts/authContext';
 
 const ProtectedRoute = () => {
-  const { currentUser } = useAuth();
+  const { user, loading } = useAuth();
+  console.log("ProtectedRoute - user:", user, "loading:", loading);
 
-  if (!currentUser) {
-    // Si no hay usuario autenticado, redirige a la página de login
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    console.log("User not authenticated, redirecting to login");
     return <Navigate to="/login" replace />;
   }
 
-  // Si hay un usuario autenticado, renderiza el child route (Outlet)
+  console.log("User authenticated, rendering Outlet");
   return <Outlet />;
 };
 

@@ -13,7 +13,6 @@ import LoginPage from './pages/LoginPage';
 import { Outlet } from 'react-router-dom';
 import ProtectedRoute from './components/Commons/ProtectRoute';
 
-// Componente para el layout con Navbar
 const Layout = () => {
   return (
     <>
