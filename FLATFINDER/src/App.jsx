@@ -29,9 +29,10 @@ function App() {
         <Routes>
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />
-            <Route element={<ProtectedRoute />}>
+            
               <Route path="/new-flat" element={<NewFlatPage />} />
               <Route path="/favorite-flats" element={<FavouritesPage />} />
               <Route path="/my-flats" element={<MyFlatsPage />} />
