@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardMedia, Typography, Box, Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import AcUnitIcon from '@mui/icons-material/AcUnit';
 import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
@@ -9,9 +10,15 @@ import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function FlatView({ flat, onEdit, onDelete, showActions = false }) {
     const [isFavorite, setIsFavorite] = useState(false);
+    const navigate = useNavigate();
 
-    const handleFavoriteClick = () => {
+    const handleFavoriteClick = (e) => {
+        e.stopPropagation();
         setIsFavorite(!isFavorite);
+    };
+
+    const handleCardClick = () => {
+        navigate(`/flat/${flat.id}`);
     };
 
     const formatDate = (timestamp) => {
@@ -26,15 +33,22 @@ export default function FlatView({ flat, onEdit, onDelete, showActions = false }
 
     return (
         <Box sx={{ display: 'flex', justifyContent: 'center', padding: 3 }}>
-            <Card sx={{ 
-                boxShadow: 3, 
-                padding: 2, 
-                borderRadius: 2, 
-                maxWidth: 300, 
-                height: 'auto',
-                textAlign: 'center', 
-                backgroundColor: 'rgba(242, 230, 207, 0.3)'
-            }}>
+            <Card 
+                sx={{ 
+                    boxShadow: 3, 
+                    padding: 2, 
+                    borderRadius: 2, 
+                    maxWidth: 300, 
+                    height: 'auto',
+                    textAlign: 'center', 
+                    backgroundColor: 'rgba(242, 230, 207, 0.3)',
+                    cursor: 'pointer',
+                    '&:hover': {
+                        boxShadow: 6,
+                    },
+                }}
+                onClick={handleCardClick}
+            >
                 <CardMedia
                     component="img"
                     image={flat.imageURL || 'https://via.placeholder.com/300x200'}
@@ -98,7 +112,10 @@ export default function FlatView({ flat, onEdit, onDelete, showActions = false }
                             startIcon={<EditIcon />}
                             variant="contained"
                             color="primary"
-                            onClick={() => onEdit(flat)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onEdit(flat);
+                            }}
                         >
                             Editar
                         </Button>
@@ -106,7 +123,10 @@ export default function FlatView({ flat, onEdit, onDelete, showActions = false }
                             startIcon={<DeleteIcon />}
                             variant="contained"
                             color="error"
-                            onClick={() => onDelete(flat.id)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onDelete(flat.id);
+                            }}
                         >
                             Eliminar
                         </Button>

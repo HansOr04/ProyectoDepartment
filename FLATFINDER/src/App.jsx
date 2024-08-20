@@ -13,6 +13,7 @@ import LoginPage from './pages/LoginPage';
 import { Outlet } from 'react-router-dom';
 import ProtectedRoute from './components/Commons/ProtectRoute';
 import EditFlatPage from './pages/EditFlatPage';
+import FlatDetailsPage from './pages/FlatDetailsPage';
 
 const Layout = () => {
   return (
@@ -33,7 +34,7 @@ function App() {
           <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />
-            
+            <Route path="/flat/:id" element={<FlatDetailsPage />} />
               <Route path="/new-flat" element={<NewFlatPage />} />
               <Route path="/favorite-flats" element={<FavouritesPage />} />
               <Route path="/my-flats" element={<MyFlatsPage />} />

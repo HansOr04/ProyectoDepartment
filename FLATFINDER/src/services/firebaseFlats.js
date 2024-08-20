@@ -4,7 +4,7 @@ import { db, storage } from "../config/firebase";
 
 // Define the name of the collection we're going to use from the database
 const collectionName = "flats";
-const usersCollectionName = "users"; // Añadido para la nueva función
+const usersCollectionName = "users";
 
 // Define the reference to the collection we're going to use
 const flatsCollectionRef = collection(db, collectionName);
@@ -121,7 +121,7 @@ const getFlatsByUser = async (userId) => {
     }
 };
 
-// NUEVO MÉTODO: GET ALL FLATS WITH OWNERS
+// GET ALL FLATS WITH OWNERS
 const getAllFlatsWithOwners = async () => {
     try {
         const flatsSnapshot = await getDocs(flatsCollectionRef);
@@ -167,5 +167,5 @@ export {
     uploadFlatImage, 
     linkFlatToUser, 
     getFlatsByUser,
-    getAllFlatsWithOwners // Añadida la nueva función a las exportaciones
+    getAllFlatsWithOwners
 };
