@@ -11,6 +11,7 @@ const MessagesList = ({ flatId, currentUser, flatOwner, onReply }) => {
 
   useEffect(() => {
     const unsubscribe = subscribeToMessages(flatId, (newMessages) => {
+      console.log("Received new messages:", newMessages); // Added log
       setMessages(newMessages);
     });
     return () => unsubscribe();
@@ -20,10 +21,13 @@ const MessagesList = ({ flatId, currentUser, flatOwner, onReply }) => {
     const fetchAvatarUrls = async () => {
       const urls = {};
       for (const msg of messages) {
+        console.log("Processing message:", msg); // Added log
         if (msg.imageUid && !avatarUrls[msg.imageUid]) {
+          console.log("Fetching URL for imageUid:", msg.imageUid); // Added log
           try {
             const imageRef = ref(storage, msg.imageUid);
             const url = await getDownloadURL(imageRef);
+            console.log("Fetched URL:", url); // Added log
             urls[msg.imageUid] = url;
           } catch (error) {
             console.error("Error getting avatar URL:", error);
@@ -41,6 +45,7 @@ const MessagesList = ({ flatId, currentUser, flatOwner, onReply }) => {
     const userName = msg.userName || 'Usuario Anónimo';
     const avatarLetter = userName.charAt(0).toUpperCase();
     const avatarUrl = avatarUrls[msg.imageUid];
+    console.log("Rendering message:", msg.id, "Avatar URL:", avatarUrl); // Added log
 
     return (
       <ListItem key={msg.id} alignItems="flex-start" sx={{ flexDirection: 'column' }}>

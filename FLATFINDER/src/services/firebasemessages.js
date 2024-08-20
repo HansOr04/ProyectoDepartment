@@ -1,7 +1,5 @@
-//Aqui se debera configurar los servicios de firebase para los mensajes que se podran colocar en cada flat 
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db, storage } from "../config/firebase";
-
 
 export const sendMessage = async (flatId, messageData) => {
   try {
@@ -24,6 +22,8 @@ export const sendMessage = async (flatId, messageData) => {
       replyTo: messageData.replyTo || null
     };
 
+    console.log("Sending message:", messageToSend); // Added log
+
     const messagesRef = collection(db, `flats/${flatId}/messages`);
     await addDoc(messagesRef, messageToSend);
     console.log('Message sent successfully');
@@ -34,6 +34,7 @@ export const sendMessage = async (flatId, messageData) => {
 };
 
 export const subscribeToMessages = (flatId, callback) => {
+  console.log("Subscribing to messages for flat:", flatId); // Added log
   const q = query(collection(db, `flats/${flatId}/messages`), orderBy('createdAt', 'desc'));
   return onSnapshot(q, (querySnapshot) => {
     const messages = querySnapshot.docs.map(doc => {
@@ -45,9 +46,10 @@ export const subscribeToMessages = (flatId, callback) => {
         userId: data.userId || '',
         createdAt: data.createdAt || new Date(),
         replyTo: data.replyTo || null,
-        userAvatar: data.userAvatar || null
+        imageUid: data.imageUid || null // Ensure imageUid is included
       };
     });
+    console.log("Received messages:", messages); // Added log
     callback(messages);
   });
 };

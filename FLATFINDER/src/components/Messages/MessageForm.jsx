@@ -27,10 +27,10 @@ const MessageForm = ({ flatId, currentUser, replyToMessage, onReplyCancel }) => 
           text: message.trim(),
           userId: currentUser.id,
           userName: `${currentUser.firstName} ${currentUser.lastName}`,
-          imageUid: currentUser.imageUid,
+          imageUid: currentUser.imageUid, // Ensure this is set correctly
           replyTo: replyToMessage ? replyToMessage.id : null,
         };
-        console.log("Sending message with data:", messageData);
+        console.log("Sending message with data:", messageData); // Added log
         
         await sendMessage(flatId, messageData);
         console.log("Message sent successfully");
