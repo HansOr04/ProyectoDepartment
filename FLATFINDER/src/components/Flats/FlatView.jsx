@@ -1,20 +1,27 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardMedia, Typography, Box, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import AcUnitIcon from '@mui/icons-material/AcUnit';
 import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-export default function FlatView({ flat, onEdit, onDelete, showActions = false }) {
-    const [isFavorite, setIsFavorite] = useState(false);
+export default function FlatView({ 
+  flat, 
+  onEdit, 
+  onDelete, 
+  showActions = false, 
+  isFavorite = false, 
+  onToggleFavorite 
+}) {
     const navigate = useNavigate();
 
     const handleFavoriteClick = (e) => {
         e.stopPropagation();
-        setIsFavorite(!isFavorite);
+        onToggleFavorite(flat.id);
     };
 
     const handleCardClick = () => {
@@ -99,7 +106,11 @@ export default function FlatView({ flat, onEdit, onDelete, showActions = false }
                         }} 
                         onClick={handleFavoriteClick}
                     >
-                        <FavoriteBorderIcon sx={{ fontSize: 24, color: isFavorite ? 'red' : 'inherit', paddingTop: 2.5 }} />
+                        {isFavorite ? (
+                            <FavoriteIcon sx={{ fontSize: 24, color: 'red', paddingTop: 2.5 }} />
+                        ) : (
+                            <FavoriteBorderIcon sx={{ fontSize: 24, paddingTop: 2.5 }} />
+                        )}
                         <Typography variant="body2" component="p" sx={{ ml: 0.5, fontSize: '1rem', paddingTop: 2.5 }}>
                             {isFavorite ? 'Favorito' : 'Marcar como favorito'}
                         </Typography>

@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Button, ButtonWrapper, ContainerImage, ContentWrapper, Title, Overlay } from './HomePages';
+import { Button, ButtonWrapper, ContainerImage, ContentWrapper, Title, Overlay } from '../pages/HomePages';
 import FlatView from '../components/Flats/FlatView';
-import { Box, Grid, Typography, CircularProgress } from '@mui/material';
-import { getAllFlatsWithOwners } from '../services/firebaseFlats'; // Asegúrate de que la ruta sea correcta
+import { Box, Grid, Typography, CircularProgress, Select, MenuItem, TextField } from '@mui/material';
+import { getAllFlatsWithOwners, addToFavorites, removeFavorite } from '../services/firebaseFlats';
+import { useAuth } from '../contexts/authContext';
 
 function HomePage() {
   const [selectedCity, setSelectedCity] = useState('');
@@ -12,12 +13,18 @@ function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const flatListRef = useRef(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchFlats = async () => {
       try {
         setLoading(true);
         const flatsData = await getAllFlatsWithOwners();
+        if (user && user.favorites) {
+          flatsData.forEach(flat => {
+            flat.isFavorite = user.favorites.includes(flat.id);
+          });
+        }
         setFlats(flatsData);
         setLoading(false);
       } catch (err) {
@@ -28,7 +35,30 @@ function HomePage() {
     };
 
     fetchFlats();
-  }, []);
+  }, [user]);
+
+  const handleToggleFavorite = async (flatId) => {
+    if (!user) {
+      alert("Por favor, inicia sesión para agregar favoritos.");
+      return;
+    }
+
+    try {
+      const flat = flats.find(f => f.id === flatId);
+      if (flat.isFavorite) {
+        await removeFavorite(user.id, flatId);
+      } else {
+        await addToFavorites(user.id, flatId);
+      }
+      
+      setFlats(prevFlats => prevFlats.map(f => 
+        f.id === flatId ? { ...f, isFavorite: !f.isFavorite } : f
+      ));
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+      alert("Hubo un error al actualizar los favoritos. Por favor, intenta de nuevo.");
+    }
+  };
 
   const scrollToFlatList = () => {
     if (flatListRef.current) {
@@ -44,13 +74,28 @@ function HomePage() {
     );
   });
 
+  // Helper function to get the user's full name
+  const getUserFullName = () => {
+    if (user && user.firstName && user.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    } else if (user && user.firstName) {
+      return user.firstName;
+    } else if (user && user.email) {
+      return user.email.split('@')[0]; // Use the part before @ in email if no name is available
+    }
+    return ''; // Return empty string if no user info is available
+  };
+
+  // Log user object for debugging
+  console.log('User object:', user);
+
   return (
     <div>
       <ContainerImage>
         <Overlay />
         <ContentWrapper>
           <Title>
-            Bienvenido nombre <br />
+            Bienvenido {getUserFullName()} <br />
             Te ayudamos a encontrar tu FLAT
           </Title>
           <ButtonWrapper>
@@ -61,23 +106,30 @@ function HomePage() {
 
       {/* Filtros */}
       <Box sx={{ padding: '20px', display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap' }}>
-        <Box sx={{ margin: '10px' }}>
+        <Box sx={{ margin: '10px', minWidth: 120 }}>
           <Typography component="label" sx={{ marginRight: '10px' }}>Ciudad:</Typography>
-          <select value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)}>
-            <option value="">Todas</option>
-            <option value="Quito">Quito</option>
-            <option value="Guayaquil">Guayaquil</option>
-            <option value="Cuenca">Cuenca</option>
-            <option value="Manta">Manta</option>
-            <option value="Ambato">Ambato</option>
-            <option value="Loja">Loja</option>
-            <option value="Esmeraldas">Esmeraldas</option>
-            <option value="Ibarra">Ibarra</option>
-          </select>
+          <Select
+            value={selectedCity}
+            onChange={(e) => setSelectedCity(e.target.value)}
+            displayEmpty
+            inputProps={{ 'aria-label': 'Without label' }}
+          >
+            <MenuItem value="">
+              <em>Todas</em>
+            </MenuItem>
+            <MenuItem value="Quito">Quito</MenuItem>
+            <MenuItem value="Guayaquil">Guayaquil</MenuItem>
+            <MenuItem value="Cuenca">Cuenca</MenuItem>
+            <MenuItem value="Manta">Manta</MenuItem>
+            <MenuItem value="Ambato">Ambato</MenuItem>
+            <MenuItem value="Loja">Loja</MenuItem>
+            <MenuItem value="Esmeraldas">Esmeraldas</MenuItem>
+            <MenuItem value="Ibarra">Ibarra</MenuItem>
+          </Select>
         </Box>
         <Box sx={{ margin: '10px' }}>
           <Typography component="label" sx={{ marginRight: '10px' }}>Precio máximo:</Typography>
-          <input
+          <TextField
             type="number"
             value={maxPrice}
             onChange={(e) => setMaxPrice(e.target.value)}
@@ -86,10 +138,13 @@ function HomePage() {
         </Box>
         <Box sx={{ margin: '10px' }}>
           <Typography component="label" sx={{ marginRight: '10px' }}>Fecha disponible:</Typography>
-          <input
+          <TextField
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
+            InputLabelProps={{
+              shrink: true,
+            }}
           />
         </Box>
       </Box>
@@ -108,7 +163,11 @@ function HomePage() {
           <Grid container spacing={3}>
             {filteredFlats.map(flat => (
               <Grid item xs={12} sm={6} md={4} lg={3} key={flat.id}>
-                <FlatView flat={flat} />
+                <FlatView 
+                  flat={flat}
+                  isFavorite={flat.isFavorite}
+                  onToggleFavorite={handleToggleFavorite}
+                />
               </Grid>
             ))}
           </Grid>
