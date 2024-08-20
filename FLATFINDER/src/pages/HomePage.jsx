@@ -1,14 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button, ButtonWrapper, ContainerImage, ContentWrapper, Title, Overlay } from '../pages/HomePages';
 import FlatView from '../components/Flats/FlatView';
-import { Box, Grid, Typography, Select, MenuItem, TextField, Skeleton } from '@mui/material';
+import { Box, Grid, Typography, Select, MenuItem, TextField, Skeleton, Paper, InputAdornment, IconButton, Tooltip } from '@mui/material';
 import { getAllFlatsWithOwners, addToFavorites, removeFavorite } from '../services/firebaseFlats';
 import { useAuth } from '../contexts/authContext';
+import { SearchOutlined, LocationCity, AttachMoney, SquareFoot, DeleteOutline } from '@mui/icons-material';
 
 function HomePage() {
   const [selectedCity, setSelectedCity] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
-  const [selectedDate, setSelectedDate] = useState('');
+  const [minArea, setMinArea] = useState('');
   const [flats, setFlats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -66,12 +67,18 @@ function HomePage() {
     }
   };
 
+  const clearFilters = () => {
+    setSelectedCity('');
+    setMaxPrice('');
+    setMinArea('');
+  };
+
   const filteredFlats = flats.filter(flat => {
-    return (
-      (selectedCity === '' || flat.city === selectedCity) &&
-      (maxPrice === '' || flat.rentPrice <= parseInt(maxPrice)) &&
-      (selectedDate === '' || new Date(flat.dateAvailable) >= new Date(selectedDate))
-    );
+    const cityMatch = selectedCity === '' || flat.city === selectedCity;
+    const priceMatch = maxPrice === '' || parseInt(flat.rentPrice) <= parseInt(maxPrice);
+    const areaMatch = minArea === '' || parseInt(flat.areaSize) >= parseInt(minArea);
+    
+    return cityMatch && priceMatch && areaMatch;
   });
 
   const getUserFullName = () => {
@@ -103,8 +110,6 @@ function HomePage() {
     </Box>
   );
 
-  console.log('User object:', user);
-
   return (
     <div>
       <ContainerImage>
@@ -120,49 +125,87 @@ function HomePage() {
         </ContentWrapper>
       </ContainerImage>
 
-      <Box sx={{ padding: '20px', display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap' }}>
-        <Box sx={{ margin: '10px', minWidth: 120 }}>
-          <Typography component="label" sx={{ marginRight: '10px' }}>Ciudad:</Typography>
-          <Select
-            value={selectedCity}
-            onChange={(e) => setSelectedCity(e.target.value)}
-            displayEmpty
-            inputProps={{ 'aria-label': 'Without label' }}
-          >
-            <MenuItem value="">
-              <em>Todas</em>
-            </MenuItem>
-            <MenuItem value="Quito">Quito</MenuItem>
-            <MenuItem value="Guayaquil">Guayaquil</MenuItem>
-            <MenuItem value="Cuenca">Cuenca</MenuItem>
-            <MenuItem value="Manta">Manta</MenuItem>
-            <MenuItem value="Ambato">Ambato</MenuItem>
-            <MenuItem value="Loja">Loja</MenuItem>
-            <MenuItem value="Esmeraldas">Esmeraldas</MenuItem>
-            <MenuItem value="Ibarra">Ibarra</MenuItem>
-          </Select>
-        </Box>
-        <Box sx={{ margin: '10px' }}>
-          <Typography component="label" sx={{ marginRight: '10px' }}>Precio máximo:</Typography>
-          <TextField
-            type="number"
-            value={maxPrice}
-            onChange={(e) => setMaxPrice(e.target.value)}
-            placeholder="Ingresa un precio"
-          />
-        </Box>
-        <Box sx={{ margin: '10px' }}>
-          <Typography component="label" sx={{ marginRight: '10px' }}>Fecha disponible:</Typography>
-          <TextField
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            InputLabelProps={{
-              shrink: true,
-            }}
-          />
-        </Box>
-      </Box>
+      <Paper elevation={3} sx={{ margin: '20px', padding: '20px' }}>
+        <Typography variant="h6" gutterBottom>Filtrar Flats</Typography>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={6} md={3}>
+            <Select
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+              displayEmpty
+              fullWidth
+              startAdornment={
+                <InputAdornment position="start">
+                  <LocationCity />
+                </InputAdornment>
+              }
+            >
+              <MenuItem value="">
+                <em>Todas las ciudades</em>
+              </MenuItem>
+              <MenuItem value="Quito">Quito</MenuItem>
+              <MenuItem value="Guayaquil">Guayaquil</MenuItem>
+              <MenuItem value="Cuenca">Cuenca</MenuItem>
+              <MenuItem value="Manta">Manta</MenuItem>
+              <MenuItem value="Ambato">Ambato</MenuItem>
+              <MenuItem value="Loja">Loja</MenuItem>
+              <MenuItem value="Esmeraldas">Esmeraldas</MenuItem>
+              <MenuItem value="Ibarra">Ibarra</MenuItem>
+            </Select>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField
+              type="number"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value)}
+              placeholder="Precio máximo"
+              fullWidth
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <AttachMoney />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <TextField
+                type="number"
+                value={minArea}
+                onChange={(e) => setMinArea(e.target.value)}
+                placeholder="Área mínima (m²)"
+                fullWidth
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SquareFoot />
+                    </InputAdornment>
+                  ),
+                  endAdornment: <InputAdornment position="end">m²</InputAdornment>,
+                }}
+              />
+              <Tooltip title="Limpiar filtros">
+                <IconButton onClick={clearFilters} color="primary" sx={{ ml: 1 }}>
+                  <DeleteOutline />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Button 
+              variant="contained" 
+              color="primary" 
+              fullWidth 
+              startIcon={<SearchOutlined />}
+              onClick={scrollToFlatList}
+            >
+              Buscar
+            </Button>
+          </Grid>
+        </Grid>
+      </Paper>
 
       <Box ref={flatListRef} sx={{ padding: '20px' }}>
         {loading ? (
