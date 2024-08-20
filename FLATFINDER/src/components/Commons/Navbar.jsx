@@ -16,6 +16,7 @@ import { Home, Add, Favorite, Apartment } from "@mui/icons-material";
 import { storage } from '../../config/firebase';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '../../contexts/authContext';
+import { allowedEmails } from '../../utils/allowedEmails'; // Ajusta la ruta según sea necesario
 
 function Navbar() {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -169,7 +170,9 @@ function Navbar() {
           onClose={handleMenuClose}
         >
           <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
-          <MenuItem onClick={handleAllUsersClick}>All Users</MenuItem>
+          {allowedEmails.includes(user.email) && (
+            <MenuItem onClick={handleAllUsersClick}>All Users</MenuItem>
+          )}
           <MenuItem onClick={handleLogout}>Logout</MenuItem>
         </Menu>
       </Toolbar>
