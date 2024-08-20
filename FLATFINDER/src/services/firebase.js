@@ -9,6 +9,19 @@ const collectionName = "users";
 // Definir la referencia a la colección que vamos a utilizar
 const usersCollectionRef = collection(db, collectionName);
 
+const getAuthenticatedUserId = () => {
+    return new Promise((resolve, reject) => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            unsubscribe(); // Dejar de escuchar después de obtener el estado de autenticación
+            if (user) {
+                resolve(user.uid);
+            } else {
+                reject(new Error("No authenticated user found"));
+            }
+        });
+    });
+};
+
 // AUTHENTICATE
 const authenticateUser = async (email, password) => {
     try {
@@ -116,4 +129,5 @@ const uploadUserImage = async (userId, imageFile) => {
     }
 };
 
-export { authenticateUser, getUsers, createUser, updateUser, deleteUser, getUserByID, uploadUserImage };
+export { 
+    getAuthenticatedUserId, authenticateUser, getUsers, createUser, updateUser, deleteUser, getUserByID, uploadUserImage };

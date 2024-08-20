@@ -1,33 +1,85 @@
 import React, { useState } from 'react';
+import { TextField, Button, Box, Typography } from '@mui/material';
+import SendIcon from '@mui/icons-material/Send';
 import { sendMessage } from '../../services/firebasemessages';
 
-const MessageForm = ({ flatId }) => {
+const MessageForm = ({ flatId, currentUser, replyToMessage, onReplyCancel }) => {
   const [message, setMessage] = useState('');
+  const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+    if (!currentUser) {
+      setError('Debes iniciar sesión para enviar mensajes.');
+      return;
+    }
+
+    if (!currentUser.id) {
+      setError('Error: No se pudo obtener el ID del usuario.');
+      console.error("User object doesn't have id:", currentUser);
+      return;
+    }
+
     if (message.trim()) {
-      await sendMessage(flatId, message);
-      setMessage('');
+      try {
+        const messageData = {
+          text: message.trim(),
+          userId: currentUser.id,
+          userName: `${currentUser.firstName} ${currentUser.lastName}`,
+          imageUid: currentUser.imageUid,
+          replyTo: replyToMessage ? replyToMessage.id : null,
+        };
+        console.log("Sending message with data:", messageData);
+        
+        await sendMessage(flatId, messageData);
+        console.log("Message sent successfully");
+        setMessage('');
+        if (replyToMessage) {
+          onReplyCancel();
+        }
+      } catch (error) {
+        console.error('Error al enviar el mensaje:', error);
+        setError(`No se pudo enviar el mensaje: ${error.message}`);
+      }
     }
   };
 
+  if (!currentUser) {
+    return (
+      <Typography color="error">
+        Debes iniciar sesión para enviar mensajes.
+      </Typography>
+    );
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="mt-4">
-      <input
-        type="text"
+    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+      <TextField
+        fullWidth
+        variant="outlined"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
-        placeholder="Escribe un mensaje..."
-        className="w-full p-2 border rounded"
+        placeholder={replyToMessage ? `Responder a ${replyToMessage.userName}` : "Escribe un mensaje..."}
+        InputProps={{
+          endAdornment: (
+            <Button type="submit" variant="contained" endIcon={<SendIcon />} disabled={!message.trim()}>
+              Enviar
+            </Button>
+          ),
+        }}
       />
-      <button 
-        type="submit" 
-        className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-      >
-        Enviar
-      </button>
-    </form>
+      {replyToMessage && (
+        <Button onClick={onReplyCancel} sx={{ mt: 1 }}>
+          Cancelar respuesta
+        </Button>
+      )}
+      {error && (
+        <Typography color="error" sx={{ mt: 1 }}>
+          {error}
+        </Typography>
+      )}
+    </Box>
   );
 };
 
