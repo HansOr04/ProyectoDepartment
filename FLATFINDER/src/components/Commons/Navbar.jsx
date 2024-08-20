@@ -11,12 +11,13 @@ import {
   Menu,
   MenuItem,
   CircularProgress,
+  Box,
 } from "@mui/material";
 import { Home, Add, Favorite, Apartment } from "@mui/icons-material";
 import { storage } from '../../config/firebase';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '../../contexts/authContext';
-import { allowedEmails } from '../../utils/allowedEmails'; // Ajusta la ruta según sea necesario
+import { allowedEmails } from '../../utils/allowedEmails';
 
 function Navbar() {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -150,20 +151,25 @@ function Navbar() {
         >
           My Flats
         </Button>
-        <IconButton
-          edge="end"
-          sx={{ color: "#114C5F" }}
-          onClick={handleAvatarClick}
-        >
-          {avatarLoading ? (
-            <CircularProgress size={40} />
-          ) : (
-            <Avatar
-              alt="User Avatar"
-              src={userAvatar}
-            />
-          )}
-        </IconButton>
+        <Box sx={{ display: 'flex', alignItems: 'center', marginRight: 2 }}>
+          <Typography variant="body1" sx={{ marginRight: 1 }}>
+            Hola, {user.firstName} {user.lastName}
+          </Typography>
+          <IconButton
+            edge="end"
+            sx={{ color: "#114C5F" }}
+            onClick={handleAvatarClick}
+          >
+            {avatarLoading ? (
+              <CircularProgress size={40} />
+            ) : (
+              <Avatar
+                alt="User Avatar"
+                src={userAvatar}
+              />
+            )}
+          </IconButton>
+        </Box>
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}

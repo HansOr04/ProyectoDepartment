@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button, ButtonWrapper, ContainerImage, ContentWrapper, Title, Overlay } from '../pages/HomePages';
 import FlatView from '../components/Flats/FlatView';
-import { Box, Grid, Typography, CircularProgress, Select, MenuItem, TextField } from '@mui/material';
+import { Box, Grid, Typography, Select, MenuItem, TextField, Skeleton } from '@mui/material';
 import { getAllFlatsWithOwners, addToFavorites, removeFavorite } from '../services/firebaseFlats';
 import { useAuth } from '../contexts/authContext';
 
@@ -74,19 +74,35 @@ function HomePage() {
     );
   });
 
-  // Helper function to get the user's full name
   const getUserFullName = () => {
     if (user && user.firstName && user.lastName) {
       return `${user.firstName} ${user.lastName}`;
     } else if (user && user.firstName) {
       return user.firstName;
     } else if (user && user.email) {
-      return user.email.split('@')[0]; // Use the part before @ in email if no name is available
+      return user.email.split('@')[0];
     }
-    return ''; // Return empty string if no user info is available
+    return '';
   };
 
-  // Log user object for debugging
+  const LoadingSkeleton = () => (
+    <Box sx={{ padding: '20px' }}>
+      <Grid container spacing={3}>
+        {[...Array(8)].map((_, index) => (
+          <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+            <Box sx={{ width: '100%', marginRight: 0, my: 5 }}>
+              <Skeleton variant="rectangular" width="100%" height={118} />
+              <Box sx={{ pt: 0.5 }}>
+                <Skeleton />
+                <Skeleton width="60%" />
+              </Box>
+            </Box>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
+  );
+
   console.log('User object:', user);
 
   return (
@@ -104,7 +120,6 @@ function HomePage() {
         </ContentWrapper>
       </ContainerImage>
 
-      {/* Filtros */}
       <Box sx={{ padding: '20px', display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap' }}>
         <Box sx={{ margin: '10px', minWidth: 120 }}>
           <Typography component="label" sx={{ marginRight: '10px' }}>Ciudad:</Typography>
@@ -149,12 +164,9 @@ function HomePage() {
         </Box>
       </Box>
 
-      {/* Contenido de Flats */}
       <Box ref={flatListRef} sx={{ padding: '20px' }}>
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
-            <CircularProgress />
-          </Box>
+          <LoadingSkeleton />
         ) : error ? (
           <Typography variant="h6" align="center" color="error" sx={{ marginTop: '20px' }}>
             {error}
