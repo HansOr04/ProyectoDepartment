@@ -12,6 +12,7 @@ import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
 import { Outlet } from 'react-router-dom';
 import ProtectedRoute from './components/Commons/ProtectRoute';
+import EditFlatPage from './pages/EditFlatPage';
 
 const Layout = () => {
   return (
@@ -36,6 +37,7 @@ function App() {
               <Route path="/new-flat" element={<NewFlatPage />} />
               <Route path="/favorite-flats" element={<FavouritesPage />} />
               <Route path="/my-flats" element={<MyFlatsPage />} />
+              <Route path="/edit-flat/:id" element={<EditFlatPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/all-users" element={<AllUsersPage />} />
             </Route>

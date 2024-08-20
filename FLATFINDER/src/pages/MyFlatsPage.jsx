@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/authContext'; // Asegúrate de que la ruta sea correcta
-import { getFlatsByUser } from '../services/firebaseFlats'; // Asegúrate de que la ruta sea correcta
-import FlatView from '../components/Flats/FlatView'; // Asegúrate de que la ruta sea correcta
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/authContext';
+import { getFlatsByUser, deleteFlat } from '../services/firebaseFlats';
+import FlatView from '../components/Flats/FlatView';
 import { CircularProgress, Typography, Box } from '@mui/material';
 
 function MyFlatsPage() {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [flats, setFlats] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -31,6 +33,22 @@ function MyFlatsPage() {
         loadFlats();
     }, [user]);
 
+    const handleEdit = (flat) => {
+        navigate(`/edit-flat/${flat.id}`);
+    };
+
+    const handleDelete = async (flatId) => {
+        if (window.confirm("Are you sure you want to delete this flat?")) {
+            try {
+                await deleteFlat(flatId);
+                setFlats(flats.filter(flat => flat.id !== flatId));
+            } catch (error) {
+                console.error("Error deleting flat:", error);
+                setError("Failed to delete flat. Please try again.");
+            }
+        }
+    };
+
     if (loading) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
@@ -55,13 +73,19 @@ function MyFlatsPage() {
             {flats.length === 0 ? (
                 <Typography>You haven't added any flats yet.</Typography>
             ) : (
-                <Box 
-                    display="grid" 
-                    gridTemplateColumns="repeat(auto-fill, minmax(300px, 1fr))" 
+                <Box
+                    display="grid"
+                    gridTemplateColumns="repeat(auto-fill, minmax(350px, 1fr))"
                     gap={3}
                 >
                     {flats.map(flat => (
-                        <FlatView key={flat.id} flat={flat} />
+                        <FlatView 
+                            key={flat.id} 
+                            flat={flat} 
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                            showActions={true}
+                        />
                     ))}
                 </Box>
             )}

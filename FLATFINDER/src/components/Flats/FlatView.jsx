@@ -1,22 +1,27 @@
 import React, { useState } from 'react';
-import { Card, CardMedia, Typography, Box } from '@mui/material';
+import { Card, CardMedia, Typography, Box, Button } from '@mui/material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import AcUnitIcon from '@mui/icons-material/AcUnit';
 import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
-export default function FlatView({ flat }) {
+export default function FlatView({ flat, onEdit, onDelete, showActions = false }) {
     const [isFavorite, setIsFavorite] = useState(false);
 
     const handleFavoriteClick = () => {
         setIsFavorite(!isFavorite);
     };
 
-    // Función auxiliar para formatear la fecha
-    const formatDate = (dateString) => {
-        if (!dateString) return 'No disponible';
-        const date = new Date(dateString);
-        return date.toLocaleDateString();
+    const formatDate = (timestamp) => {
+        if (!timestamp) return 'No disponible';
+        if (timestamp && typeof timestamp.toDate === 'function') {
+            const date = timestamp.toDate();
+            return date.toLocaleDateString();
+        }
+        const date = new Date(timestamp);
+        return isNaN(date.getTime()) ? 'Fecha inválida' : date.toLocaleDateString();
     };
 
     return (
@@ -26,7 +31,7 @@ export default function FlatView({ flat }) {
                 padding: 2, 
                 borderRadius: 2, 
                 maxWidth: 300, 
-                height: 450,
+                height: 'auto',
                 textAlign: 'center', 
                 backgroundColor: 'rgba(242, 230, 207, 0.3)'
             }}>
@@ -86,6 +91,27 @@ export default function FlatView({ flat }) {
                         </Typography>
                     </Box>
                 </Box>
+
+                {showActions && (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+                        <Button
+                            startIcon={<EditIcon />}
+                            variant="contained"
+                            color="primary"
+                            onClick={() => onEdit(flat)}
+                        >
+                            Editar
+                        </Button>
+                        <Button
+                            startIcon={<DeleteIcon />}
+                            variant="contained"
+                            color="error"
+                            onClick={() => onDelete(flat.id)}
+                        >
+                            Eliminar
+                        </Button>
+                    </Box>
+                )}
             </Card>
         </Box>
     );

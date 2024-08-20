@@ -4,6 +4,7 @@ import { db, storage } from "../config/firebase";
 
 // Define the name of the collection we're going to use from the database
 const collectionName = "flats";
+const usersCollectionName = "users"; // Añadido para la nueva función
 
 // Define the reference to the collection we're going to use
 const flatsCollectionRef = collection(db, collectionName);
@@ -120,6 +121,43 @@ const getFlatsByUser = async (userId) => {
     }
 };
 
+// NUEVO MÉTODO: GET ALL FLATS WITH OWNERS
+const getAllFlatsWithOwners = async () => {
+    try {
+        const flatsSnapshot = await getDocs(flatsCollectionRef);
+        
+        const flatsWithOwners = await Promise.all(flatsSnapshot.docs.map(async (flatDoc) => {
+            const flatData = flatDoc.data();
+            const flatId = flatDoc.id;
+            
+            // Obtener información del propietario
+            let ownerData = null;
+            if (flatData.ownerId) {
+                const ownerRef = doc(db, usersCollectionName, flatData.ownerId);
+                const ownerSnapshot = await getDoc(ownerRef);
+                if (ownerSnapshot.exists()) {
+                    ownerData = ownerSnapshot.data();
+                }
+            }
+            
+            return {
+                id: flatId,
+                ...flatData,
+                owner: ownerData ? {
+                    id: flatData.ownerId,
+                    name: ownerData.name,
+                    email: ownerData.email
+                } : null
+            };
+        }));
+        
+        return flatsWithOwners;
+    } catch (error) {
+        console.error("Error getting flats with owners:", error);
+        throw new Error("Failed to retrieve flats with owner information");
+    }
+};
+
 export { 
     getFlats, 
     createFlat, 
@@ -128,5 +166,6 @@ export {
     getFlatByID, 
     uploadFlatImage, 
     linkFlatToUser, 
-    getFlatsByUser 
+    getFlatsByUser,
+    getAllFlatsWithOwners // Añadida la nueva función a las exportaciones
 };

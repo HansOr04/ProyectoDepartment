@@ -1,14 +1,34 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button, ButtonWrapper, ContainerImage, ContentWrapper, Title, Overlay } from './HomePages';
-import FlatView from '../components/Flats/FlatView'; // Importamos FlatView en lugar de FlatList
-import { flats } from '../data/flats';
-import { Box, Grid, Typography } from '@mui/material'; // Importamos componentes de Material-UI para mejorar el diseño
+import FlatView from '../components/Flats/FlatView';
+import { Box, Grid, Typography, CircularProgress } from '@mui/material';
+import { getAllFlatsWithOwners } from '../services/firebaseFlats'; // Asegúrate de que la ruta sea correcta
 
 function HomePage() {
   const [selectedCity, setSelectedCity] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
+  const [flats, setFlats] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const flatListRef = useRef(null);
+
+  useEffect(() => {
+    const fetchFlats = async () => {
+      try {
+        setLoading(true);
+        const flatsData = await getAllFlatsWithOwners();
+        setFlats(flatsData);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching flats:", err);
+        setError("Error al cargar los flats. Por favor, intente de nuevo más tarde.");
+        setLoading(false);
+      }
+    };
+
+    fetchFlats();
+  }, []);
 
   const scrollToFlatList = () => {
     if (flatListRef.current) {
@@ -74,16 +94,26 @@ function HomePage() {
         </Box>
       </Box>
 
-      {/* Usamos Grid para mostrar los FlatView components */}
+      {/* Contenido de Flats */}
       <Box ref={flatListRef} sx={{ padding: '20px' }}>
-        <Grid container spacing={3}>
-          {filteredFlats.map(flat => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={flat.id}>
-              <FlatView flat={flat} />
-            </Grid>
-          ))}
-        </Grid>
-        {filteredFlats.length === 0 && (
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Typography variant="h6" align="center" color="error" sx={{ marginTop: '20px' }}>
+            {error}
+          </Typography>
+        ) : (
+          <Grid container spacing={3}>
+            {filteredFlats.map(flat => (
+              <Grid item xs={12} sm={6} md={4} lg={3} key={flat.id}>
+                <FlatView flat={flat} />
+              </Grid>
+            ))}
+          </Grid>
+        )}
+        {!loading && !error && filteredFlats.length === 0 && (
           <Typography variant="h6" align="center" sx={{ marginTop: '20px' }}>
             No se encontraron flats que coincidan con los criterios de búsqueda.
           </Typography>
