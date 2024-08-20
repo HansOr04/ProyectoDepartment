@@ -12,6 +12,13 @@ export default function FlatView({ flat }) {
         setIsFavorite(!isFavorite);
     };
 
+    // Función auxiliar para formatear la fecha
+    const formatDate = (dateString) => {
+        if (!dateString) return 'No disponible';
+        const date = new Date(dateString);
+        return date.toLocaleDateString();
+    };
+
     return (
         <Box sx={{ display: 'flex', justifyContent: 'center', padding: 3 }}>
             <Card sx={{ 
@@ -19,43 +26,31 @@ export default function FlatView({ flat }) {
                 padding: 2, 
                 borderRadius: 2, 
                 maxWidth: 300, 
-                height: 450, // Aumentar la altura de la tarjeta
+                height: 450,
                 textAlign: 'center', 
-                backgroundColor: 'rgba(242, 230, 207, 0.3)' // Color con 30% de opacidad
+                backgroundColor: 'rgba(242, 230, 207, 0.3)'
             }}>
                 <CardMedia
                     component="img"
-                    image={flat.imageUrl}
+                    image={flat.imageURL || 'https://via.placeholder.com/300x200'}
                     alt={`${flat.streetName} ${flat.streetNumber}`}
                     sx={{ borderRadius: 1, height: 200, objectFit: 'cover', margin: '0 auto' }}
                 />
-                <Typography
-                    variant="body2"
-                    component="p"
-                    sx={{ color: "gray", mt: 1 }}
-                >
-                    {flat.streetName}, {flat.streetNumber}
+                <Typography variant="body2" component="p" sx={{ color: "gray", mt: 1 }}>
+                    {flat.streetName || 'N/A'}, {flat.streetNumber || 'N/A'}
                 </Typography>
-                <Typography
-                    variant='h6'
-                    component="h3"
-                    sx={{ mt: 0.5 }}
-                >
-                    {flat.city}, {flat.country}
+                <Typography variant='h6' component="h3" sx={{ mt: 0.5 }}>
+                    {flat.city || 'N/A'}, {flat.country || 'N/A'}
                 </Typography>
-                <Typography
-                    variant="body2"
-                    component="p"
-                    sx={{ mt: 0.5 }}
-                >
-                    {flat.description}, construido en {flat.yearBuilt}
+                <Typography variant="body2" component="p" sx={{ mt: 0.5 }}>
+                    {flat.description || 'No description available'}, construido en {flat.yearBuilt || 'N/A'}
                 </Typography>
 
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 2, gap: 2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <CalendarMonthIcon sx={{ mr: 0.5, fontSize: 18, color: '#114C5F' }} />
                         <Typography variant="body2" component="p">
-                            {flat.dateAvailable}
+                            {formatDate(flat.dateAvailable)}
                         </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -67,14 +62,14 @@ export default function FlatView({ flat }) {
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <ZoomOutMapIcon sx={{ mr: 0.5, fontSize: 18, color: '#114C5F' }} />
                         <Typography variant="body2" component="p">
-                            {flat.areaSize} m²
+                            {flat.areaSize || 'N/A'} m²
                         </Typography>
                     </Box>
                 </Box>
 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
-                    <Typography variant="h6" component="p" sx={{ fontSize: '1.7rem', paddingLeft: 1.5,paddingTop:2.5 }}>
-                        ${flat.rentPrice}
+                    <Typography variant="h6" component="p" sx={{ fontSize: '1.7rem', paddingLeft: 1.5, paddingTop: 2.5 }}>
+                        ${flat.rentPrice || 'N/A'}
                     </Typography>
                     <Box 
                         sx={{ 
@@ -85,8 +80,8 @@ export default function FlatView({ flat }) {
                         }} 
                         onClick={handleFavoriteClick}
                     >
-                        <FavoriteBorderIcon sx={{ fontSize: 24, color: isFavorite ? 'red' : 'inherit',paddingTop:2.5 }} />
-                        <Typography variant="body2" component="p" sx={{ ml: 0.5, fontSize: '1rem', paddingTop:2.5 }}>
+                        <FavoriteBorderIcon sx={{ fontSize: 24, color: isFavorite ? 'red' : 'inherit', paddingTop: 2.5 }} />
+                        <Typography variant="body2" component="p" sx={{ ml: 0.5, fontSize: '1rem', paddingTop: 2.5 }}>
                             {isFavorite ? 'Favorito' : 'Marcar como favorito'}
                         </Typography>
                     </Box>

@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Button, ButtonWrapper, ContainerImage, ContentWrapper, Title, Overlay } from './HomePages';
-import FlatList from '../components/Flats/FlatList'; // Asegúrate de que la ruta sea correcta
+import FlatView from '../components/Flats/FlatView'; // Importamos FlatView en lugar de FlatList
 import { flats } from '../data/flats';
+import { Box, Grid, Typography } from '@mui/material'; // Importamos componentes de Material-UI para mejorar el diseño
 
 function HomePage() {
   const [selectedCity, setSelectedCity] = useState('');
@@ -39,9 +40,9 @@ function HomePage() {
       </ContainerImage>
 
       {/* Filtros */}
-      <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-around' }}>
-        <div>
-          <label>Ciudad:</label>
+      <Box sx={{ padding: '20px', display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap' }}>
+        <Box sx={{ margin: '10px' }}>
+          <Typography component="label" sx={{ marginRight: '10px' }}>Ciudad:</Typography>
           <select value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)}>
             <option value="">Todas</option>
             <option value="Quito">Quito</option>
@@ -53,30 +54,41 @@ function HomePage() {
             <option value="Esmeraldas">Esmeraldas</option>
             <option value="Ibarra">Ibarra</option>
           </select>
-        </div>
-        <div>
-          <label>Precio máximo:</label>
+        </Box>
+        <Box sx={{ margin: '10px' }}>
+          <Typography component="label" sx={{ marginRight: '10px' }}>Precio máximo:</Typography>
           <input
             type="number"
             value={maxPrice}
             onChange={(e) => setMaxPrice(e.target.value)}
             placeholder="Ingresa un precio"
           />
-        </div>
-        <div>
-          <label>Fecha disponible:</label>
+        </Box>
+        <Box sx={{ margin: '10px' }}>
+          <Typography component="label" sx={{ marginRight: '10px' }}>Fecha disponible:</Typography>
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
           />
-        </div>
-      </div>
+        </Box>
+      </Box>
 
-      {/* Usa FlatList para mostrar los flats filtrados y asigna la referencia */}
-      <div ref={flatListRef}>
-        <FlatList flats={filteredFlats} />
-      </div>
+      {/* Usamos Grid para mostrar los FlatView components */}
+      <Box ref={flatListRef} sx={{ padding: '20px' }}>
+        <Grid container spacing={3}>
+          {filteredFlats.map(flat => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={flat.id}>
+              <FlatView flat={flat} />
+            </Grid>
+          ))}
+        </Grid>
+        {filteredFlats.length === 0 && (
+          <Typography variant="h6" align="center" sx={{ marginTop: '20px' }}>
+            No se encontraron flats que coincidan con los criterios de búsqueda.
+          </Typography>
+        )}
+      </Box>
     </div>
   );
 }

@@ -10,7 +10,7 @@ export const flats = [
         yearBuilt: 2020,
         rentPrice: 600,
         dateAvailable: '2024-08-15',
-        imageUrl: 'https://images.pexels.com/photos/2119714/pexels-photo-2119714.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+        imageURL: 'https://images.pexels.com/photos/2119714/pexels-photo-2119714.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
         description: 'Moderno apartamento en el corazón de Quito, con excelente ubicación y todas las comodidades.'
     },
     {
@@ -24,7 +24,7 @@ export const flats = [
         yearBuilt: 2018,
         rentPrice: 500,
         dateAvailable: '2024-09-01',
-        imageUrl: 'https://images.pexels.com/photos/323705/pexels-photo-323705.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+        imageURL: 'https://images.pexels.com/photos/323705/pexels-photo-323705.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
         description: 'Amplio y luminoso piso en zona comercial de Guayaquil, ideal para familias o profesionales.'
     },
     {
@@ -38,7 +38,7 @@ export const flats = [
         yearBuilt: 2019,
         rentPrice: 450,
         dateAvailable: '2024-08-20',
-        imageUrl: 'https://images.pexels.com/photos/2370932/pexels-photo-2370932.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+        imageURL: 'https://images.pexels.com/photos/2370932/pexels-photo-2370932.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
         description: 'Acogedor apartamento en el centro histórico de Cuenca, con encanto colonial y comodidades modernas.'
     },
     {
@@ -52,7 +52,7 @@ export const flats = [
         yearBuilt: 2021,
         rentPrice: 550,
         dateAvailable: '2024-09-10',
-        imageUrl: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+        imageURL: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
         description: 'Lujoso apartamento frente al mar con impresionantes vistas y acceso directo a la playa.'
     },
     {
@@ -66,7 +66,7 @@ export const flats = [
         yearBuilt: 2017,
         rentPrice: 400,
         dateAvailable: '2024-08-30',
-        imageUrl: 'https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+        imageURL: 'https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
         description: 'Cómodo apartamento en el centro de Ambato, cerca de parques y mercados locales.'
     },
     {
@@ -80,7 +80,7 @@ export const flats = [
         yearBuilt: 2022,
         rentPrice: 480,
         dateAvailable: '2024-09-05',
-        imageUrl: 'https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+        imageURL: 'https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
         description: 'Elegante apartamento en zona residencial de Loja, con acabados de lujo y áreas verdes.'
     },
     {
@@ -94,7 +94,7 @@ export const flats = [
         yearBuilt: 2020,
         rentPrice: 350,
         dateAvailable: '2024-08-25',
-        imageUrl: 'https://images.pexels.com/photos/1918291/pexels-photo-1918291.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+        imageURL: 'https://images.pexels.com/photos/1918291/pexels-photo-1918291.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
         description: 'Acogedor apartamento cerca de la playa en Esmeraldas, perfecto para disfrutar del sol y el mar.'
     },
     {
@@ -108,7 +108,7 @@ export const flats = [
         yearBuilt: 2019,
         rentPrice: 420,
         dateAvailable: '2024-09-15',
-        imageUrl: 'https://images.pexels.com/photos/2082087/pexels-photo-2082087.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+        imageURL: 'https://images.pexels.com/photos/2082087/pexels-photo-2082087.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
         description: 'Espacioso apartamento en el centro de Ibarra, con vistas a la laguna de Yahuarcocha y ambiente tranquilo.'
     }
 ];

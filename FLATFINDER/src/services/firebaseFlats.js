@@ -2,16 +2,17 @@ import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, updateDoc, query, 
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../config/firebase";
 
-// Definir el nombre de la colección que vamos a utilizar de esa base de datos
+// Define the name of the collection we're going to use from the database
 const collectionName = "flats";
 
-// Definir la referencia a la colección que vamos a utilizar
+// Define the reference to the collection we're going to use
 const flatsCollectionRef = collection(db, collectionName);
 
 // CREATE
-const createFlat = async (flat) => {
+const createFlat = async (flat, userId) => {
     try {
-        const docRef = await addDoc(flatsCollectionRef, flat);
+        const flatWithOwner = { ...flat, ownerId: userId };
+        const docRef = await addDoc(flatsCollectionRef, flatWithOwner);
         return docRef;
     } catch (error) {
         console.error("Error creating flat:", error);
@@ -74,16 +75,16 @@ const deleteFlat = async (id) => {
 // UPLOAD IMAGE and RETURN URL
 const uploadFlatImage = async (flatId, imageFile) => {
     try {
-        // Crear una referencia en Storage para la imagen
+        // Create a reference in Storage for the image
         const imageRef = ref(storage, `flatImages/${flatId}/${imageFile.name}`);
         
-        // Subir la imagen a Storage
+        // Upload the image to Storage
         await uploadBytes(imageRef, imageFile);
         
-        // Obtener la URL de descarga de la imagen
+        // Get the download URL of the image
         const downloadURL = await getDownloadURL(imageRef);
         
-        // Actualizar el documento del flat con la URL de la imagen
+        // Update the flat document with the image URL
         const flatRef = doc(db, collectionName, flatId);
         await updateDoc(flatRef, { imageURL: downloadURL });
 
