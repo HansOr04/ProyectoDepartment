@@ -10,6 +10,7 @@ import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { auth, db, storage } from '../../config/firebase';
 import { uploadUserImage } from '../../services/firebase';
+import { useNavigate } from 'react-router-dom';
 import {
   PageContainer,
   FormContainer,
@@ -36,6 +37,7 @@ const UserForm = ({ userId = null }) => {
     avatar: null
   });
   const [previewImage, setPreviewImage] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -102,19 +104,27 @@ const UserForm = ({ userId = null }) => {
 
         // Create user document in Firestore
         await setDoc(doc(db, 'users', userId), userDataToSave);
+
+        if (values.avatar) {
+          const imageUid = await uploadUserImage(userId, values.avatar);
+          // Update user profile with avatar UID
+          await updateProfile(auth.currentUser, { photoURL: imageUid });
+        }
+
+        alert('User created successfully');
+        navigate('/login'); // Redirect to login page after successful registration
       } else {
         // For existing user update
         await updateDoc(doc(db, 'users', userId), userDataToSave);
-      }
 
-      if (values.avatar) {
-        const imageUid = await uploadUserImage(userId, values.avatar);
-        // Update user profile with avatar UID
-        await updateProfile(auth.currentUser, { photoURL: imageUid });
-        // The Firestore document is updated within the uploadUserImage function
-      }
+        if (values.avatar) {
+          const imageUid = await uploadUserImage(userId, values.avatar);
+          // Update user profile with avatar UID
+          await updateProfile(auth.currentUser, { photoURL: imageUid });
+        }
 
-      alert(userId ? 'User updated successfully' : 'User created successfully');
+        alert('User updated successfully');
+      }
     } catch (error) {
       console.error('Error saving user:', error);
       alert('An error occurred while saving the user: ' + error.message);
