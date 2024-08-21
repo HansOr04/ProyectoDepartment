@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { ErrorMessage } from 'formik';
 import { CircularProgress } from '@mui/material';
 import { authenticateUser } from '../../services/firebase';
 
-// Styled Components
+// Styled Components (se mantienen igual)
 const PageContainer = styled.div`
   display: flex;
   justify-content: center;
@@ -42,11 +41,12 @@ const StyledField = styled.input`
   }
 `;
 
-const StyledErrorMessage = styled(ErrorMessage)`
+const StyledErrorMessage = styled.div`
   color: #f44336;
   font-size: 14px;
   margin-top: -15px;
   margin-bottom: 15px;
+  text-align: center;
 `;
 
 const SubmitButton = styled.button`
@@ -93,12 +93,13 @@ const LoginForm = () => {
     try {
       const user = await authenticateUser(email, password);
       if (user) {
+        // Autenticación exitosa, redirigimos al usuario a la ruta "/"
         navigate('/');
       } else {
-        setError('Failed to authenticate. Please check your credentials.');
+        setError('No se encontraron las credenciales. Por favor, verifica tu usuario y contraseña.');
       }
     } catch (err) {
-      setError(err.message);
+      setError('Usuario o contraseña incorrecta. Por favor, inténtalo de nuevo.');
     } finally {
       setLoading(false);
     }
