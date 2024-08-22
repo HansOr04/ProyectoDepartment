@@ -1,10 +1,14 @@
+// Importaciones necesarias de React y react-router-dom
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+// Importación de styled-components para estilos
 import styled from 'styled-components';
+// Importación de CircularProgress de Material-UI para el indicador de carga
 import { CircularProgress } from '@mui/material';
+// Importación del servicio de autenticación de Firebase
 import { authenticateUser } from '../../services/firebase';
 
-// Styled Components (se mantienen igual)
+// Componentes estilizados
 const PageContainer = styled.div`
   display: flex;
   justify-content: center;
@@ -79,18 +83,23 @@ const StyledLink = styled(Link)`
   }
 `;
 
+// Componente principal LoginForm
 const LoginForm = () => {
+  // Estados para manejar el email, password, carga y errores
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  // Hook para la navegación
   const navigate = useNavigate();
 
+  // Función para manejar el envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
+      // Intento de autenticación del usuario
       const user = await authenticateUser(email, password);
       if (user) {
         // Autenticación exitosa, redirigimos al usuario a la ruta "/"
@@ -105,6 +114,7 @@ const LoginForm = () => {
     }
   };
 
+  // Renderizado del componente
   return (
     <PageContainer>
       <FormContainer>

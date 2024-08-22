@@ -1,15 +1,20 @@
+// Importaciones necesarias de React y Firebase
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import { getUserByID } from '../services/firebase';
 
+// Creación del contexto de autenticación
 const AuthContext = createContext();
 
+// Componente AuthProvider
 export const AuthProvider = ({ children }) => {
+  // Estados para manejar el usuario, carga y errores
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Efecto para manejar el estado de autenticación
   useEffect(() => {
     console.log("AuthProvider useEffect running");
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -17,6 +22,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       if (firebaseUser) {
         try {
+          // Obtener datos adicionales del usuario desde Firestore
           const userData = await getUserByID(firebaseUser.uid);
           console.log("User data fetched:", userData);
           setUser(userData);
@@ -31,9 +37,11 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     });
 
+    // Limpiar la suscripción cuando el componente se desmonte
     return () => unsubscribe();
   }, []);
 
+  // Función para iniciar sesión
   const login = async (email, password) => {
     console.log("Login function called");
     setLoading(true);
@@ -51,6 +59,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Función para cerrar sesión
   const logout = async () => {
     console.log("Logout function called");
     setLoading(true);
@@ -69,6 +78,7 @@ export const AuthProvider = ({ children }) => {
 
   console.log("Current auth state:", { user, loading, error });
 
+  // Valor que se proporcionará a través del contexto
   const value = {
     user,
     loading,
@@ -77,9 +87,11 @@ export const AuthProvider = ({ children }) => {
     logout
   };
 
+  // Renderizado del Provider con el valor del contexto
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
+// Hook personalizado para usar el contexto de autenticación
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

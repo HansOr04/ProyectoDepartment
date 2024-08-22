@@ -1,5 +1,7 @@
+// Importaciones necesarias de React y react-router-dom
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+// Importaciones de componentes de Material-UI
 import { 
   TextField, 
   Checkbox, 
@@ -14,15 +16,22 @@ import {
   IconButton
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+// Importaciones para el selector de fecha
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+// Importaciones de servicios y contextos personalizados
 import { createFlat, updateFlat, uploadFlatImage, getFlatByID } from '../../services/firebaseFlats';
 import { useAuth } from '../../contexts/authContext';
 
+// Componente principal FlatForm
 const FlatForm = ({ flatId }) => {
+  // Obtiene el usuario del contexto de autenticación
   const { user } = useAuth();
+  // Hook para la navegación programática
   const navigate = useNavigate();
+  
+  // Estado para los datos del formulario
   const [formData, setFormData] = useState({
     city: '',
     country: '',
@@ -35,11 +44,14 @@ const FlatForm = ({ flatId }) => {
     dateAvailable: null,
     description: '',
   });
+  
+  // Estados para manejar la imagen, carga, errores y éxito
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(!!flatId);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
+  // Efecto para cargar los datos del piso si se está editando
   useEffect(() => {
     const loadFlatData = async () => {
       if (flatId) {
@@ -48,12 +60,13 @@ const FlatForm = ({ flatId }) => {
           if (flatData) {
             setFormData({
               ...flatData,
+              // Convierte la fecha de Firestore a objeto Date de JavaScript
               dateAvailable: flatData.dateAvailable ? new Date(flatData.dateAvailable.seconds * 1000) : null,
             });
           }
         } catch (err) {
-          console.error("Error loading flat data:", err);
-          setError("Failed to load flat data. Please try again.");
+          console.error("Error al cargar los datos del piso:", err);
+          setError("No se pudieron cargar los datos del piso. Por favor, inténtelo de nuevo.");
         } finally {
           setLoading(false);
         }
@@ -65,6 +78,7 @@ const FlatForm = ({ flatId }) => {
     loadFlatData();
   }, [flatId]);
 
+  // Manejador para cambios en los campos del formulario
   const handleChange = (event) => {
     const { name, value, checked, type } = event.target;
     setFormData(prevState => ({
@@ -73,6 +87,7 @@ const FlatForm = ({ flatId }) => {
     }));
   };
 
+  // Manejador para cambios en la fecha
   const handleDateChange = (date) => {
     setFormData(prevState => ({
       ...prevState,
@@ -80,45 +95,51 @@ const FlatForm = ({ flatId }) => {
     }));
   };
 
+  // Manejador para cambios en la imagen
   const handleImageChange = (event) => {
     if (event.target.files[0]) {
       setImage(event.target.files[0]);
     }
   };
 
+  // Manejador para el envío del formulario
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!user) {
-      setError('You must be logged in to perform this action.');
+      setError('Debe estar conectado para realizar esta acción.');
       return;
     }
     setLoading(true);
     setError(null);
     try {
       if (flatId) {
+        // Actualizar piso existente
         await updateFlat(flatId, formData);
         if (image) {
           const imageUrl = await uploadFlatImage(flatId, image);
           await updateFlat(flatId, { imageURL: imageUrl });
         }
-        setSuccess('Flat updated successfully!');
+        setSuccess('¡Piso actualizado con éxito!');
       } else {
+        // Crear nuevo piso
         const flatRef = await createFlat(formData, user.id);
         if (image) {
           const imageUrl = await uploadFlatImage(flatRef.id, image);
           await updateFlat(flatRef.id, { imageURL: imageUrl });
         }
-        setSuccess('Flat created successfully!');
+        setSuccess('¡Piso creado con éxito!');
       }
+      // Redirigir a la página de "mis pisos" después de 2 segundos
       setTimeout(() => navigate('/my-flats'), 2000);
     } catch (error) {
-      console.error('Error processing flat:', error);
-      setError(`Failed to ${flatId ? 'update' : 'create'} flat. Please try again.`);
+      console.error('Error al procesar el piso:', error);
+      setError(`No se pudo ${flatId ? 'actualizar' : 'crear'} el piso. Por favor, inténtelo de nuevo.`);
     } finally {
       setLoading(false);
     }
   };
 
+  // Mostrar spinner de carga mientras se cargan los datos
   if (loading) {
     return (
       <Container maxWidth="sm" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -127,58 +148,64 @@ const FlatForm = ({ flatId }) => {
     );
   }
 
+  // Renderizado del formulario
   return (
     <Container maxWidth="sm">
       <Paper elevation={3} style={{ padding: '2rem', marginTop: '2rem' }}>
         <Typography variant="h4" gutterBottom align="center">
-          {flatId ? 'Update Flat' : 'Create New Flat'}
+          {flatId ? 'Actualizar Piso' : 'Crear Nuevo Piso'}
         </Typography>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
+            {/* Campo Ciudad */}
             <Grid item xs={12} sm={6}>
               <TextField
                 name="city"
-                label="City"
+                label="Ciudad"
                 fullWidth
                 value={formData.city}
                 onChange={handleChange}
                 required
               />
             </Grid>
+            {/* Campo País */}
             <Grid item xs={12} sm={6}>
               <TextField
                 name="country"
-                label="Country"
+                label="País"
                 fullWidth
                 value={formData.country}
                 onChange={handleChange}
                 required
               />
             </Grid>
+            {/* Campo Nombre de la Calle */}
             <Grid item xs={12} sm={6}>
               <TextField
                 name="streetName"
-                label="Street Name"
+                label="Nombre de la Calle"
                 fullWidth
                 value={formData.streetName}
                 onChange={handleChange}
                 required
               />
             </Grid>
+            {/* Campo Número de la Calle */}
             <Grid item xs={12} sm={6}>
               <TextField
                 name="streetNumber"
-                label="Street Number"
+                label="Número de la Calle"
                 fullWidth
                 value={formData.streetNumber}
                 onChange={handleChange}
                 required
               />
             </Grid>
+            {/* Campo Tamaño del Área */}
             <Grid item xs={12} sm={6}>
               <TextField
                 name="areaSize"
-                label="Area Size (m²)"
+                label="Tamaño del Área (m²)"
                 fullWidth
                 type="number"
                 value={formData.areaSize}
@@ -186,10 +213,11 @@ const FlatForm = ({ flatId }) => {
                 required
               />
             </Grid>
+            {/* Campo Año de Construcción */}
             <Grid item xs={12} sm={6}>
               <TextField
                 name="yearBuilt"
-                label="Year Built"
+                label="Año de Construcción"
                 fullWidth
                 type="number"
                 value={formData.yearBuilt}
@@ -197,10 +225,11 @@ const FlatForm = ({ flatId }) => {
                 required
               />
             </Grid>
+            {/* Campo Precio de Alquiler */}
             <Grid item xs={12} sm={6}>
               <TextField
                 name="rentPrice"
-                label="Rent Price"
+                label="Precio de Alquiler"
                 fullWidth
                 type="number"
                 value={formData.rentPrice}
@@ -208,16 +237,18 @@ const FlatForm = ({ flatId }) => {
                 required
               />
             </Grid>
+            {/* Campo Fecha Disponible */}
             <Grid item xs={12} sm={6}>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
-                  label="Date Available"
+                  label="Fecha Disponible"
                   value={formData.dateAvailable}
                   onChange={handleDateChange}
                   renderInput={(params) => <TextField {...params} fullWidth required />}
                 />
               </LocalizationProvider>
             </Grid>
+            {/* Campo Tiene Aire Acondicionado */}
             <Grid item xs={12}>
               <FormControlLabel
                 control={
@@ -228,13 +259,14 @@ const FlatForm = ({ flatId }) => {
                     color="primary"
                   />
                 }
-                label="Has AC"
+                label="Tiene Aire Acondicionado"
               />
             </Grid>
+            {/* Campo Descripción */}
             <Grid item xs={12}>
               <TextField
                 name="description"
-                label="Description"
+                label="Descripción"
                 multiline
                 rows={4}
                 fullWidth
@@ -243,6 +275,7 @@ const FlatForm = ({ flatId }) => {
                 required
               />
             </Grid>
+            {/* Campo para subir imagen */}
             <Grid item xs={12}>
               <input
                 accept="image/*"
@@ -253,14 +286,15 @@ const FlatForm = ({ flatId }) => {
               />
               <label htmlFor="raised-button-file">
                 <Button variant="outlined" component="span" fullWidth>
-                  {flatId ? 'Upload New Image' : 'Upload Image'}
+                  {flatId ? 'Subir Nueva Imagen' : 'Subir Imagen'}
                 </Button>
               </label>
               {image && <Typography variant="body2" style={{ marginTop: '0.5rem' }}>{image.name}</Typography>}
               {formData.imageURL && !image && (
-                <Typography variant="body2" style={{ marginTop: '0.5rem' }}>Current image: {formData.imageURL}</Typography>
+                <Typography variant="body2" style={{ marginTop: '0.5rem' }}>Imagen actual: {formData.imageURL}</Typography>
               )}
             </Grid>
+            {/* Botón de envío */}
             <Grid item xs={12}>
               <Button 
                 type="submit" 
@@ -269,12 +303,13 @@ const FlatForm = ({ flatId }) => {
                 color="primary"
                 disabled={loading}
               >
-                {loading ? <CircularProgress size={24} /> : (flatId ? 'Update Flat' : 'Create Flat')}
+                {loading ? <CircularProgress size={24} /> : (flatId ? 'Actualizar Piso' : 'Crear Piso')}
               </Button>
             </Grid>
           </Grid>
         </form>
       </Paper>
+      {/* Snackbar para mostrar mensajes de éxito o error */}
       <Snackbar
         anchorOrigin={{
           vertical: 'bottom',

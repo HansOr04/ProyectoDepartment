@@ -1,14 +1,20 @@
+// Importaciones necesarias
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/authContext';
 import { Box, Typography, Grid, CircularProgress } from '@mui/material';
 import FlatView from '../components/Flats/FlatView';
 import { getUserFavorites, removeFavorite } from '../services/firebaseFlats';
 
+// Definición del componente FavouritesPage
 function FavouritesPage() {
+  // Estado para almacenar los pisos favoritos
   const [favoriteFlats, setFavoriteFlats] = useState([]);
+  // Estado para manejar la carga
   const [loading, setLoading] = useState(true);
+  // Obtener el usuario actual del contexto de autenticación
   const { user } = useAuth();
 
+  // Efecto para cargar los favoritos del usuario
   useEffect(() => {
     const fetchFavorites = async () => {
       if (user) {
@@ -26,6 +32,7 @@ function FavouritesPage() {
     fetchFavorites();
   }, [user]);
 
+  // Función para manejar la eliminación de un favorito
   const handleRemoveFavorite = async (flatId) => {
     try {
       await removeFavorite(user.id, flatId);
@@ -35,6 +42,7 @@ function FavouritesPage() {
     }
   };
 
+  // Renderizado condicional para el estado de carga
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
@@ -43,13 +51,14 @@ function FavouritesPage() {
     );
   }
 
+  // Renderizado principal del componente
   return (
     <Box sx={{ padding: '20px' }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        Mis Flats Favoritos
+        Mis Pisos Favoritos
       </Typography>
       {favoriteFlats.length === 0 ? (
-        <Typography>No tienes flats favoritos aún.</Typography>
+        <Typography>No tienes pisos favoritos aún.</Typography>
       ) : (
         <Grid container spacing={3}>
           {favoriteFlats.map(flat => (

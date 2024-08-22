@@ -1,3 +1,4 @@
+// Importaciones necesarias
 import React, { useState, useRef, useEffect } from 'react';
 import { Button, ButtonWrapper, ContainerImage, ContentWrapper, Title, Overlay } from '../pages/HomePages';
 import FlatView from '../components/Flats/FlatView';
@@ -7,6 +8,7 @@ import { useAuth } from '../contexts/authContext';
 import { SearchOutlined, LocationCity, AttachMoney, SquareFoot, DeleteOutline } from '@mui/icons-material';
 
 function HomePage() {
+  // Estados para los filtros y datos
   const [selectedCity, setSelectedCity] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [minArea, setMinArea] = useState('');
@@ -16,6 +18,7 @@ function HomePage() {
   const flatListRef = useRef(null);
   const { user } = useAuth();
 
+  // Efecto para cargar los pisos
   useEffect(() => {
     const fetchFlats = async () => {
       try {
@@ -38,6 +41,7 @@ function HomePage() {
     fetchFlats();
   }, [user]);
 
+  // Función para manejar la adición/eliminación de favoritos
   const handleToggleFavorite = async (flatId) => {
     if (!user) {
       alert("Por favor, inicia sesión para agregar favoritos.");
@@ -61,18 +65,21 @@ function HomePage() {
     }
   };
 
+  // Función para desplazarse a la lista de pisos
   const scrollToFlatList = () => {
     if (flatListRef.current) {
       flatListRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
+  // Función para limpiar los filtros
   const clearFilters = () => {
     setSelectedCity('');
     setMaxPrice('');
     setMinArea('');
   };
 
+  // Filtrado de pisos basado en los criterios seleccionados
   const filteredFlats = flats.filter(flat => {
     const cityMatch = selectedCity === '' || flat.city === selectedCity;
     const priceMatch = maxPrice === '' || parseInt(flat.rentPrice) <= parseInt(maxPrice);
@@ -81,6 +88,7 @@ function HomePage() {
     return cityMatch && priceMatch && areaMatch;
   });
 
+  // Función para obtener el nombre completo del usuario
   const getUserFullName = () => {
     if (user && user.firstName && user.lastName) {
       return `${user.firstName} ${user.lastName}`;
@@ -92,6 +100,7 @@ function HomePage() {
     return '';
   };
 
+  // Componente para mostrar un esqueleto de carga
   const LoadingSkeleton = () => (
     <Box sx={{ padding: '20px' }}>
       <Grid container spacing={3}>
@@ -110,8 +119,10 @@ function HomePage() {
     </Box>
   );
 
+  // Renderizado del componente
   return (
     <div>
+      {/* Sección de bienvenida */}
       <ContainerImage>
         <Overlay />
         <ContentWrapper>
@@ -125,9 +136,11 @@ function HomePage() {
         </ContentWrapper>
       </ContainerImage>
 
+      {/* Sección de filtros */}
       <Paper elevation={3} sx={{ margin: '20px', padding: '20px' }}>
         <Typography variant="h6" gutterBottom>Filtrar Flats</Typography>
         <Grid container spacing={2} alignItems="center">
+          {/* Filtro de ciudad */}
           <Grid item xs={12} sm={6} md={3}>
             <Select
               value={selectedCity}
@@ -153,6 +166,7 @@ function HomePage() {
               <MenuItem value="Ibarra">Ibarra</MenuItem>
             </Select>
           </Grid>
+          {/* Filtro de precio máximo */}
           <Grid item xs={12} sm={6} md={3}>
             <TextField
               type="number"
@@ -169,6 +183,7 @@ function HomePage() {
               }}
             />
           </Grid>
+          {/* Filtro de área mínima */}
           <Grid item xs={12} sm={6} md={3}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <TextField
@@ -193,6 +208,7 @@ function HomePage() {
               </Tooltip>
             </Box>
           </Grid>
+          {/* Botón de búsqueda */}
           <Grid item xs={12} sm={6} md={3}>
             <Button 
               variant="contained" 
@@ -207,6 +223,7 @@ function HomePage() {
         </Grid>
       </Paper>
 
+      {/* Lista de pisos */}
       <Box ref={flatListRef} sx={{ padding: '20px' }}>
         {loading ? (
           <LoadingSkeleton />

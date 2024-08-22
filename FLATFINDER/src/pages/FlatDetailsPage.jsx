@@ -1,3 +1,4 @@
+// Importaciones necesarias
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
@@ -17,19 +18,26 @@ import { getUserByID } from '../services/firebase';
 import FlatMessages from '../components/Flats/FlatMessages';
 import { useAuth } from '../contexts/authContext';
 
+// Definición del componente FlatDetailsPage
 export default function FlatDetailsPage() {
+    // Obtener el ID del piso de los parámetros de la URL
     const { id } = useParams();
+    // Estados para almacenar los datos del piso, propietario, carga y errores
     const [flat, setFlat] = useState(null);
     const [flatOwner, setFlatOwner] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    // Hook para la navegación
     const navigate = useNavigate();
+    // Obtener el usuario actual y el estado de carga de la autenticación
     const { user, loading: authLoading } = useAuth();
 
+    // Efecto para registrar el usuario actual (para depuración)
     useEffect(() => {
         console.log("Current user in FlatDetailsPage:", user);
     }, [user]);
 
+    // Efecto para cargar los datos del piso y del propietario
     useEffect(() => {
         const fetchFlatAndOwner = async () => {
             try {
@@ -46,7 +54,7 @@ export default function FlatDetailsPage() {
                 }
             } catch (error) {
                 console.error("Error fetching flat details:", error);
-                setError("Failed to load flat details. Please try again.");
+                setError("No se pudieron cargar los detalles del piso. Por favor, intente de nuevo.");
             } finally {
                 setLoading(false);
             }
@@ -55,10 +63,12 @@ export default function FlatDetailsPage() {
         fetchFlatAndOwner();
     }, [id]);
 
+    // Función para manejar el botón de volver
     const handleBack = () => {
         navigate(-1);
     };
 
+    // Renderizado condicional para estados de carga y error
     if (loading || authLoading) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
@@ -78,11 +88,12 @@ export default function FlatDetailsPage() {
     if (!flat) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-                <Typography>Flat not found.</Typography>
+                <Typography>Piso no encontrado.</Typography>
             </Box>
         );
     }
 
+    // Renderizado principal del componente
     return (
         <Box sx={{ maxWidth: 800, margin: '0 auto', padding: 3 }}>
             <Button
@@ -93,6 +104,7 @@ export default function FlatDetailsPage() {
                 Volver
             </Button>
             <Paper elevation={3} sx={{ padding: 3, marginBottom: 4 }}>
+                {/* Imagen del piso */}
                 <Card sx={{ marginBottom: 3 }}>
                     <CardMedia
                         component="img"
@@ -101,6 +113,7 @@ export default function FlatDetailsPage() {
                         alt={`${flat.streetName} ${flat.streetNumber}`}
                     />
                 </Card>
+                {/* Detalles del piso */}
                 <Typography variant="h4" component="h1" gutterBottom>
                     {flat.streetName}, {flat.streetNumber}
                 </Typography>
@@ -133,6 +146,7 @@ export default function FlatDetailsPage() {
             
             <Divider sx={{ my: 4 }} />
             
+            {/* Sección de mensajes */}
             <Paper elevation={3} sx={{ padding: 3 }}>
                 <Typography variant="h5" component="h2" gutterBottom>
                     Mensajes
