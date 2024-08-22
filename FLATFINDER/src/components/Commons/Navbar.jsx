@@ -19,6 +19,7 @@ import { storage } from '../../config/firebase';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '../../contexts/authContext';
 import { allowedEmails } from '../../utils/allowedEmails';
+import NotificationMessages from "../Messages/NotificationMessages";
 
 function Navbar() {
   // Estado para manejar el menú del usuario
@@ -169,6 +170,7 @@ function Navbar() {
         >
           Mis Pisos
         </Button>
+        <NotificationMessages></NotificationMessages>
         {/* Saludo al usuario y avatar */}
         <Box sx={{ display: 'flex', alignItems: 'center', marginRight: 2 }}>
           <Typography variant="body1" sx={{ marginRight: 1 }}>
