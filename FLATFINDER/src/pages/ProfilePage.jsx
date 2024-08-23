@@ -1,7 +1,6 @@
-// Importaciones necesarias
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/authContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { 
   Container, 
   Typography, 
@@ -11,10 +10,12 @@ import {
   CardActions, 
   Avatar, 
   Grid,
-  Box
+  Box,
+  CircularProgress
 } from '@mui/material';
 import { Edit as EditIcon, Person as PersonIcon } from '@mui/icons-material';
 import { Timestamp } from 'firebase/firestore';
+import { getUserByID } from '../services/firebase';
 
 // Función auxiliar para formatear la fecha
 const formatDate = (timestamp) => {
@@ -44,85 +45,125 @@ const getAvatarUrl = (imageUid) => {
   return `https://firebasestorage.googleapis.com/v0/b/reactproject-9049c.appspot.com/o/${encodeURIComponent(imageUid)}?alt=media`;
 };
 
-// Componente principal ProfilePage
 export default function ProfilePage() {
-    // Obtener el usuario del contexto de autenticación
-    const { user } = useAuth();
-    // Hook para la navegación
+    const { user: currentUser } = useAuth();
     const navigate = useNavigate();
+    const { id } = useParams();
+    const [profileUser, setProfileUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // Renderizado condicional si no hay usuario
-    if (!user) {
-        return (
-          <Container maxWidth="sm">
-            <Typography variant="h6" align="center" sx={{ mt: 4 }}>Cargando datos del usuario...</Typography>
-          </Container>
-        );
-    }
+    useEffect(() => {
+        const fetchUser = async () => {
+            setLoading(true);
+            try {
+                if (id && id !== currentUser?.id) {
+                    const userData = await getUserByID(id);
+                    setProfileUser(userData);
+                } else {
+                    setProfileUser(currentUser);
+                }
+            } catch (err) {
+                console.error("Error fetching user:", err);
+                setError("Failed to load user data.");
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    // Función para manejar la actualización del perfil
+        fetchUser();
+    }, [id, currentUser]);
+
     const handleUpdateProfile = () => {
         navigate('/update-profile');
     };
 
-    // Obtener la URL del avatar
-    const avatarUrl = getAvatarUrl(user.imageUid);
+    if (loading) {
+        return (
+            <Container maxWidth="sm" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                <CircularProgress />
+            </Container>
+        );
+    }
 
-    // Renderizado principal del componente
+    if (error) {
+        return (
+            <Container maxWidth="sm">
+                <Typography color="error" align="center">{error}</Typography>
+            </Container>
+        );
+    }
+
+    if (!profileUser) {
+        return (
+            <Container maxWidth="sm">
+                <Typography align="center">Usuario no encontrado.</Typography>
+            </Container>
+        );
+    }
+
+    const avatarUrl = getAvatarUrl(profileUser.imageUid);
+    const isOwnProfile = currentUser?.id === profileUser.id;
+
     return (
         <Container maxWidth="sm">
             <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ mt: 4, mb: 4 }}>
-                Tu Perfil
+                {isOwnProfile ? 'Tu Perfil' : 'Perfil de Usuario'}
             </Typography>
             <Card raised>
                 <CardContent>
-                    {/* Avatar del usuario */}
                     <Box display="flex" justifyContent="center" mb={3}>
                         <Avatar
                             src={avatarUrl}
-                            alt={`${user.firstName} ${user.lastName}`}
+                            alt={`${profileUser.firstName} ${profileUser.lastName}`}
                             sx={{ width: 200, height: 200 }}
                         >
                             {!avatarUrl && <PersonIcon sx={{ fontSize: 80 }} />}
                         </Avatar>
                     </Box>
-                    {/* Nombre del usuario */}
                     <Typography variant="h5" component="div" gutterBottom align="center">
-                        {user.firstName} {user.lastName}
+                        {profileUser.firstName} {profileUser.lastName}
                     </Typography>
                     <Grid container spacing={2} sx={{ mt: 2 }}>
-                        {/* Correo electrónico */}
                         <Grid item xs={12} sm={6}>
                             <Typography variant="subtitle1" color="text.secondary">
                                 Correo Electrónico
                             </Typography>
                             <Typography variant="body1">
-                                {user.email}
+                                {profileUser.email}
                             </Typography>
                         </Grid>
-                        {/* Fecha de nacimiento */}
                         <Grid item xs={12} sm={6}>
                             <Typography variant="subtitle1" color="text.secondary">
                                 Fecha de Nacimiento
                             </Typography>
                             <Typography variant="body1">
-                                {formatDate(user.birthDate)}
+                                {formatDate(profileUser.birthDate)}
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Typography variant="subtitle1" color="text.secondary">
+                                Rol
+                            </Typography>
+                            <Typography variant="body1">
+                                {profileUser.rol || 'Usuario'}
                             </Typography>
                         </Grid>
                     </Grid>
                 </CardContent>
-                {/* Botón para actualizar el perfil */}
-                <CardActions sx={{ justifyContent: 'center', padding: 2 }}>
-                    <Button 
-                        variant="contained" 
-                        color="primary" 
-                        startIcon={<EditIcon />}
-                        onClick={handleUpdateProfile}
-                        fullWidth
-                    >
-                        Actualizar Perfil
-                    </Button>
-                </CardActions>
+                {isOwnProfile && (
+                    <CardActions sx={{ justifyContent: 'center', padding: 2 }}>
+                        <Button 
+                            variant="contained" 
+                            color="primary" 
+                            startIcon={<EditIcon />}
+                            onClick={handleUpdateProfile}
+                            fullWidth
+                        >
+                            Actualizar Perfil
+                        </Button>
+                    </CardActions>
+                )}
             </Card>
         </Container>
     );

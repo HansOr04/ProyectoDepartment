@@ -183,6 +183,7 @@ const updateUserRole = async (userId, newRole) => {
         throw new Error("No se pudo actualizar el rol del usuario");
     }
 };
+
 // Exportar todas las funciones
 // Esto permite que estas funciones sean importadas y utilizadas en otros archivos
 export { 

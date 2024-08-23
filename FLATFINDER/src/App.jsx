@@ -46,6 +46,7 @@ function App() {
               <Route path="/my-flats" element={<MyFlatsPage />} />
               <Route path="/edit-flat/:id" element={<EditFlatPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/user/:id" element={<ProfilePage />} />
               <Route path="/update-profile" element={<UpdateProfileRoute />} />
               <Route path="/all-users" element={<AllUsersPage />} />
             </Route>

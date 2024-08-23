@@ -205,6 +205,16 @@ const getUserFavorites = async (userId) => {
         throw new Error("No se pudieron obtener los favoritos del usuario");
     }
 };
+const getFlatCountByUser = async (userId) => {
+    try {
+        const q = query(flatsCollectionRef, where("ownerId", "==", userId));
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.size;
+    } catch (error) {
+        console.error("Error al obtener el conteo de pisos del usuario:", error);
+        throw new Error("No se pudo obtener el conteo de pisos del usuario");
+    }
+};
 
 // Exportar todas las funciones
 export { 
@@ -219,5 +229,6 @@ export {
     getAllFlatsWithOwners,
     addToFavorites,
     removeFavorite,
-    getUserFavorites
+    getUserFavorites,
+    getFlatCountByUser
 };
