@@ -1,7 +1,6 @@
-// Importaciones necesarias
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/authContext';
-import { getUsers } from '../services/firebase';
+import { getUsers, updateUserRole } from '../services/firebase';
 import { 
   Container, 
   Typography, 
@@ -14,21 +13,20 @@ import {
   TableRow,
   TablePagination,
   Avatar,
-  CircularProgress
+  CircularProgress,
+  Select,
+  MenuItem,
+  Button
 } from '@mui/material';
 
-// Definición del componente AllUsersPage
 const AllUsersPage = () => {
-    // Estados para manejar la lista de usuarios, carga, errores y paginación
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    // Obtener el usuario actual del contexto de autenticación
     const { user } = useAuth();
 
-    // Efecto para cargar los usuarios
     useEffect(() => {
         const fetchUsers = async () => {
             try {
@@ -46,8 +44,7 @@ const AllUsersPage = () => {
 
         console.log("Current user:", user);
         
-        // Verificar si el usuario tiene permiso para ver esta página
-        if (user) {
+        if (user && user.rol === 'admin') {
             fetchUsers();
         } else {
             setError("You don't have permission to view this page.");
@@ -55,7 +52,6 @@ const AllUsersPage = () => {
         }
     }, [user]);
 
-    // Manejadores para la paginación
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
     };
@@ -65,7 +61,16 @@ const AllUsersPage = () => {
         setPage(0);
     };
 
-    // Renderizado condicional para estados de carga y error
+    const handleRoleChange = async (userId, newRole) => {
+        try {
+            await updateUserRole(userId, newRole);
+            setUsers(users.map(u => u.id === userId ? {...u, rol: newRole} : u));
+        } catch (error) {
+            console.error("Error updating user role:", error);
+            alert("Failed to update user role. Please try again.");
+        }
+    };
+
     if (loading) {
         return (
             <Container maxWidth="lg" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -82,7 +87,6 @@ const AllUsersPage = () => {
         );
     }
 
-    // Renderizado principal del componente
     return (
         <Container maxWidth="lg">
             <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ mt: 4, mb: 4 }}>
@@ -96,6 +100,8 @@ const AllUsersPage = () => {
                             <TableCell>Nombre</TableCell>
                             <TableCell>Email</TableCell>
                             <TableCell>Fecha de Nacimiento</TableCell>
+                            <TableCell>Rol</TableCell>
+                            <TableCell>Acciones</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -113,6 +119,18 @@ const AllUsersPage = () => {
                                     {user.birthDate && user.birthDate.toDate ? 
                                         user.birthDate.toDate().toLocaleDateString('es-ES') : 
                                         'No proporcionado'}
+                                </TableCell>
+                                <TableCell>{user.rol || 'usuario'}</TableCell>
+                                <TableCell>
+                                    <Select
+                                        value={user.rol || 'usuario'}
+                                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                                        displayEmpty
+                                        inputProps={{ 'aria-label': 'Without label' }}
+                                    >
+                                        <MenuItem value="usuario">Usuario</MenuItem>
+                                        <MenuItem value="admin">Admin</MenuItem>
+                                    </Select>
                                 </TableCell>
                             </TableRow>
                         ))}

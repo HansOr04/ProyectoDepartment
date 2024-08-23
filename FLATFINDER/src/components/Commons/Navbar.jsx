@@ -1,4 +1,4 @@
-// Importación de hooks y componentes necesarios de React
+// Importaciones (se mantienen igual)
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -18,22 +18,15 @@ import { Home, Add, Favorite, Apartment } from "@mui/icons-material";
 import { storage } from '../../config/firebase';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '../../contexts/authContext';
-import { allowedEmails } from '../../utils/allowedEmails';
 import NotificationMessages from "../Messages/NotificationMessages";
 
 function Navbar() {
-  // Estado para manejar el menú del usuario
   const [anchorEl, setAnchorEl] = useState(null);
-  // Estado para almacenar la URL del avatar del usuario
   const [userAvatar, setUserAvatar] = useState(null);
-  // Estado para controlar si el avatar está cargando
   const [avatarLoading, setAvatarLoading] = useState(true);
-  // Hook para la navegación programática
   const navigate = useNavigate();
-  // Hook personalizado para el contexto de autenticación
   const { user, logout } = useAuth();
 
-  // Hook de efecto para obtener el avatar del usuario
   useEffect(() => {
     const fetchAvatar = async () => {
       console.log("Obteniendo avatar para el usuario:", user);
@@ -41,12 +34,10 @@ function Navbar() {
       if (user && user.imageUid) {
         console.log("URL de la foto del usuario:", user.imageUid);
         if (user.imageUid.startsWith('http')) {
-          // Si imageUid ya es una URL, usarla directamente
           console.log("Estableciendo URL directa como avatar");
           setUserAvatar(user.imageUid);
         } else {
           try {
-            // Si no, intentar obtener la URL de descarga de Firebase Storage
             console.log("Intentando obtener URL de descarga de Firebase Storage");
             const url = await getDownloadURL(ref(storage, user.imageUid));
             console.log("URL de descarga obtenida:", url);
@@ -66,17 +57,14 @@ function Navbar() {
     fetchAvatar();
   }, [user]);
 
-  // Manejador para el clic en el avatar (abre el menú)
   const handleAvatarClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
-  // Manejador para cerrar el menú
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
 
-  // Manejadores de navegación
   const handleNewFlatClick = () => {
     navigate("/new-flat");
   };
@@ -107,7 +95,6 @@ function Navbar() {
     handleMenuClose();
   };
 
-  // Manejador de cierre de sesión
   const handleLogout = async () => {
     try {
       await logout();
@@ -118,7 +105,6 @@ function Navbar() {
     handleMenuClose();
   };
 
-  // Si no hay usuario, no renderizar la barra de navegación
   if (!user) {
     console.log("No se encontró usuario, no se renderiza Navbar");
     return null;
@@ -126,11 +112,9 @@ function Navbar() {
 
   console.log("Renderizando Navbar para el usuario:", user.email);
 
-  // Renderizar la barra de navegación
   return (
     <AppBar position="static" sx={{ backgroundColor: "#fff8ec", color: "#114C5F" }}>
       <Toolbar>
-        {/* Icono de la aplicación */}
         <IconButton
           edge="start"
           sx={{ color: "#114C5F" }}
@@ -139,13 +123,11 @@ function Navbar() {
         >
           <Apartment />
         </IconButton>
-        {/* Título de la aplicación */}
         <Typography variant="h6" component="h6" sx={{ flexGrow: 1, fontFamily: "" }}>
           <Link to="/" style={{ color: "#114C5F", textDecoration: "none" }} onClick={handleHomeClick}>
             FLATFINDER
           </Link>
         </Typography>
-        {/* Botones de navegación */}
         <Button
           color="inherit"
           startIcon={<Add />}
@@ -170,8 +152,7 @@ function Navbar() {
         >
           Mis Pisos
         </Button>
-        <NotificationMessages></NotificationMessages>
-        {/* Saludo al usuario y avatar */}
+        <NotificationMessages />
         <Box sx={{ display: 'flex', alignItems: 'center', marginRight: 2 }}>
           <Typography variant="body1" sx={{ marginRight: 1 }}>
             Hola, {user.firstName} {user.lastName}
@@ -191,14 +172,13 @@ function Navbar() {
             )}
           </IconButton>
         </Box>
-        {/* Menú del usuario */}
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
         >
           <MenuItem onClick={handleProfileClick}>Perfil</MenuItem>
-          {allowedEmails.includes(user.email) && (
+          {user.rol === 'admin' && (
             <MenuItem onClick={handleAllUsersClick}>Todos los Usuarios</MenuItem>
           )}
           <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>

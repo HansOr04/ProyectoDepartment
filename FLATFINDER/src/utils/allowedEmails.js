@@ -1,1 +1,0 @@
-export const allowedEmails = ['hansalazar04@gmail.com', 'pamela@gmail.com'];

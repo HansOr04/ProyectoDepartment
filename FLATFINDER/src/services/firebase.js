@@ -168,7 +168,21 @@ const sendPasswordResetEmail = async (email) => {
         throw new Error("No se pudo procesar la solicitud de restablecimiento de contraseña");
     }
 };
-
+const updateUserRole = async (userId, newRole) => {
+    try {
+        // Referencia al documento del usuario en Firestore
+        const userRef = doc(db, collectionName, userId);
+        
+        // Actualizar solo el campo 'rol' del documento
+        await updateDoc(userRef, { rol: newRole });
+        
+        console.log(`Rol del usuario ${userId} actualizado a ${newRole}`);
+        return { success: true, message: "Rol de usuario actualizado con éxito." };
+    } catch (error) {
+        console.error("Error al actualizar el rol del usuario:", error);
+        throw new Error("No se pudo actualizar el rol del usuario");
+    }
+};
 // Exportar todas las funciones
 // Esto permite que estas funciones sean importadas y utilizadas en otros archivos
 export { 
@@ -180,5 +194,6 @@ export {
     deleteUser,
     getUserByID,
     uploadUserImage,
-    sendPasswordResetEmail
+    sendPasswordResetEmail,
+    updateUserRole
 };
