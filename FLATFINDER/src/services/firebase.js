@@ -1,8 +1,22 @@
 // Importaciones necesarias de Firebase
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
-import { ref, uploadBytes } from "firebase/storage";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { db, storage, auth } from "../config/firebase";
+// Estas importaciones proporcionan funciones para interactuar con Firestore, Storage y Authentication
+import { 
+    addDoc,       // Para añadir documentos a una colección
+    collection,   // Para referenciar una colección
+    deleteDoc,    // Para eliminar documentos
+    doc,          // Para referenciar un documento específico
+    getDoc,       // Para obtener un documento
+    getDocs,      // Para obtener múltiples documentos
+    updateDoc     // Para actualizar documentos
+} from "firebase/firestore";
+import { ref, uploadBytes } from "firebase/storage";  // Para manejar el almacenamiento de archivos
+import { 
+    signInWithEmailAndPassword,     // Para autenticar usuarios con email y contraseña
+    sendPasswordResetEmail as firebaseSendPasswordResetEmail,  // Para enviar correos de restablecimiento de contraseña
+    onAuthStateChanged,             // Para observar cambios en el estado de autenticación
+    fetchSignInMethodsForEmail      // Para verificar si un email está registrado
+} from "firebase/auth";
+import { db, storage, auth } from "../config/firebase";  // Importación de instancias de Firebase configuradas
 
 // Definir el nombre de la colección que vamos a utilizar de esa base de datos
 const collectionName = "users";
@@ -13,12 +27,13 @@ const usersCollectionRef = collection(db, collectionName);
 // Función para obtener el ID del usuario autenticado
 const getAuthenticatedUserId = () => {
     return new Promise((resolve, reject) => {
+        // Utiliza onAuthStateChanged para obtener el usuario actual
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             unsubscribe(); // Dejar de escuchar después de obtener el estado de autenticación
             if (user) {
-                resolve(user.uid);
+                resolve(user.uid);  // Si hay un usuario, resuelve con su ID
             } else {
-                reject(new Error("No se encontró un usuario autenticado"));
+                reject(new Error("No se encontró un usuario autenticado"));  // Si no hay usuario, rechaza la promesa
             }
         });
     });
@@ -27,6 +42,7 @@ const getAuthenticatedUserId = () => {
 // Función para autenticar al usuario
 const authenticateUser = async (email, password) => {
     try {
+        // Intenta iniciar sesión con el email y contraseña proporcionados
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         
@@ -34,7 +50,7 @@ const authenticateUser = async (email, password) => {
         const userDoc = await getDoc(doc(db, collectionName, user.uid));
         
         if (userDoc.exists()) {
-            return { uid: user.uid, ...userDoc.data() };
+            return { uid: user.uid, ...userDoc.data() };  // Devuelve los datos del usuario si existen
         } else {
             console.error("No se encontró el documento del usuario en Firestore");
             return null;
@@ -48,7 +64,7 @@ const authenticateUser = async (email, password) => {
 // Función para crear un nuevo usuario
 const createUser = async (user) => {
     try {
-        const docRef = await addDoc(usersCollectionRef, user);
+        const docRef = await addDoc(usersCollectionRef, user);  // Añade un nuevo documento a la colección de usuarios
         return docRef;
     } catch (error) {
         console.error("Error al crear el usuario:", error);
@@ -59,8 +75,8 @@ const createUser = async (user) => {
 // Función para obtener todos los usuarios
 const getUsers = async () => {
     try {
-        const data = await getDocs(usersCollectionRef);
-        const users = data.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        const data = await getDocs(usersCollectionRef);  // Obtiene todos los documentos de la colección de usuarios
+        const users = data.docs.map((doc) => ({ id: doc.id, ...doc.data() }));  // Mapea los documentos a un array de objetos
         return users;
     } catch (error) {
         console.error("Error al obtener los usuarios:", error);
@@ -71,10 +87,10 @@ const getUsers = async () => {
 // Función para obtener un usuario por su ID
 const getUserByID = async (id) => {
     try {
-        const userRef = doc(db, collectionName, id);
-        const userDoc = await getDoc(userRef);
+        const userRef = doc(db, collectionName, id);  // Referencia al documento del usuario
+        const userDoc = await getDoc(userRef);  // Obtiene el documento
         if (userDoc.exists()) {
-            return { id: userDoc.id, ...userDoc.data() };
+            return { id: userDoc.id, ...userDoc.data() };  // Devuelve los datos si el documento existe
         } else {
             console.error("Usuario no encontrado");
             return null;
@@ -87,9 +103,9 @@ const getUserByID = async (id) => {
 
 // Función para actualizar un usuario
 const updateUser = async (id, user) => {
-    const userRef = doc(db, collectionName, id);
+    const userRef = doc(db, collectionName, id);  // Referencia al documento del usuario
     try {
-        await updateDoc(userRef, user);
+        await updateDoc(userRef, user);  // Actualiza el documento con los nuevos datos
         return userRef;
     } catch (error) {
         console.error("Error al actualizar el usuario:", error);
@@ -100,7 +116,7 @@ const updateUser = async (id, user) => {
 // Función para eliminar un usuario
 const deleteUser = async (id) => {
     try {
-        await deleteDoc(doc(db, collectionName, id));
+        await deleteDoc(doc(db, collectionName, id));  // Elimina el documento del usuario
         return true;
     } catch (error) {
         console.error("Error al eliminar el usuario:", error);
@@ -131,7 +147,38 @@ const uploadUserImage = async (userId, imageFile) => {
     }
 };
 
+// Función para enviar un correo de restablecimiento de contraseña
+const sendPasswordResetEmail = async (email) => {
+    try {
+        // Primero, verifica si el correo existe
+        const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+        
+        if (signInMethods.length > 0) {
+            // El correo existe, procede con el envío del correo de restablecimiento
+            await firebaseSendPasswordResetEmail(auth, email);
+            console.log("Correo de restablecimiento de contraseña enviado con éxito");
+            return { success: true, message: "Se ha enviado un correo de restablecimiento de contraseña." };
+        } else {
+            // El correo no existe
+            console.log("El correo electrónico no está registrado");
+            return { success: false, message: "El correo electrónico no está registrado en nuestro sistema." };
+        }
+    } catch (error) {
+        console.error("Error al procesar la solicitud de restablecimiento de contraseña:", error);
+        throw new Error("No se pudo procesar la solicitud de restablecimiento de contraseña");
+    }
+};
+
 // Exportar todas las funciones
+// Esto permite que estas funciones sean importadas y utilizadas en otros archivos
 export { 
-    getAuthenticatedUserId, authenticateUser, getUsers, createUser, updateUser, deleteUser, getUserByID, uploadUserImage 
+    getAuthenticatedUserId,
+    authenticateUser,
+    getUsers,
+    createUser,
+    updateUser,
+    deleteUser,
+    getUserByID,
+    uploadUserImage,
+    sendPasswordResetEmail
 };
