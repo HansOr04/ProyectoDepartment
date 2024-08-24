@@ -100,9 +100,22 @@ const ImagePreviewContainer = styled.div`
 `;
 
 const ImagePreview = styled.img`
-  max-width: 100%;
+  max-width: 300px;
+  max-height: 300px;
+  width: auto;
   height: auto;
   border-radius: 4px;
+  align-content: center;
+`;
+
+const FormGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+`;
+
+const FullWidthField = styled.div`
+  grid-column: 1 / -1;
 `;
 
 // Componente principal UserForm
@@ -255,82 +268,92 @@ const UserForm = ({ userId = null }) => {
         >
           {({ setFieldValue, values, isSubmitting, errors, touched }) => (
             <Form>
-              <Field name="email" type="email" as={StyledField} placeholder="Email" disabled={!!userId} />
-              <ErrorMessage name="email" component={StyledErrorMessage} />
+              <FormGrid>
+                <FullWidthField>
+                  <Field name="email" type="email" as={StyledField} placeholder="Email" disabled={!!userId} />
+                  <ErrorMessage name="email" component={StyledErrorMessage} />
+                </FullWidthField>
 
-              {!userId && (
-                <>
-                  <Field name="password" type="password" as={StyledField} placeholder="Contraseña" />
-                  <ErrorMessage name="password" component={StyledErrorMessage} />
+                {!userId && (
+                  <>
+                    <Field name="password" type="password" as={StyledField} placeholder="Contraseña" /> 
+                    <Field name="confirmPassword" type="password" as={StyledField} placeholder="Confirmar Contraseña" />
+                    <ErrorMessage name="password" component={StyledErrorMessage} />
+                    <ErrorMessage name="confirmPassword" component={StyledErrorMessage} />
+                  </>
+                )}
 
-                  <Field name="confirmPassword" type="password" as={StyledField} placeholder="Confirmar Contraseña" />
-                  <ErrorMessage name="confirmPassword" component={StyledErrorMessage} />
-                </>
-              )}
+                <Field name="firstName" type="text" as={StyledField} placeholder="Nombre" />
+                <Field name="lastName" type="text" as={StyledField} placeholder="Apellido" />
+                <ErrorMessage name="firstName" component={StyledErrorMessage} />
+                <ErrorMessage name="lastName" component={StyledErrorMessage} />
 
-              <Field name="firstName" type="text" as={StyledField} placeholder="Nombre" />
-              <ErrorMessage name="firstName" component={StyledErrorMessage} />
+                <FullWidthField>
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker
+                      label="Fecha de Nacimiento"
+                      value={values.birthDate}
+                      onChange={(date) => setFieldValue('birthDate', date)}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          error: touched.birthDate && Boolean(errors.birthDate),
+                          helperText: touched.birthDate && errors.birthDate,
+                        },
+                      }}
+                    />
+                  </LocalizationProvider>
+                </FullWidthField>
 
-              <Field name="lastName" type="text" as={StyledField} placeholder="Apellido" />
-              <ErrorMessage name="lastName" component={StyledErrorMessage} />
+                <FullWidthField>
+                  <FileInputContainer>
+                    <FileInputLabel htmlFor="avatar">
+                      Elegir Avatar
+                      <HiddenFileInput
+                        id="avatar"
+                        name="avatar"
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => {
+                          const file = event.currentTarget.files[0];
+                          setFieldValue("avatar", file);
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setPreviewImage(reader.result);
+                            };
+                            reader.readAsDataURL(file);
+                          } else {
+                            setPreviewImage(null);
+                          }
+                        }}
+                      />
+                    </FileInputLabel>
+                    <FileName>{values.avatar ? values.avatar.name : 'Ningún archivo seleccionado'}</FileName>
+                  </FileInputContainer>
+                  <ErrorMessage name="avatar" component={StyledErrorMessage} />
+                </FullWidthField>
 
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DatePicker
-                  label="Fecha de Nacimiento"
-                  value={values.birthDate}
-                  onChange={(date) => setFieldValue('birthDate', date)}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      error: touched.birthDate && Boolean(errors.birthDate),
-                      helperText: touched.birthDate && errors.birthDate,
-                    },
-                  }}
-                />
-              </LocalizationProvider>
+                {previewImage && (
+                  <FullWidthField>
+                    <ImagePreviewContainer>
+                      <ImagePreview src={previewImage} alt="Vista previa del avatar" />
+                    </ImagePreviewContainer>
+                  </FullWidthField>
+                )}
 
-              <FileInputContainer>
-                <FileInputLabel htmlFor="avatar">
-                  Elegir Avatar
-                  <HiddenFileInput
-                    id="avatar"
-                    name="avatar"
-                    type="file"
-                    accept="image/*"
-                    onChange={(event) => {
-                      const file = event.currentTarget.files[0];
-                      setFieldValue("avatar", file);
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          setPreviewImage(reader.result);
-                        };
-                        reader.readAsDataURL(file);
-                      } else {
-                        setPreviewImage(null);
-                      }
-                    }}
-                  />
-                </FileInputLabel>
-                <FileName>{values.avatar ? values.avatar.name : 'Ningún archivo seleccionado'}</FileName>
-              </FileInputContainer>
-              <ErrorMessage name="avatar" component={StyledErrorMessage} />
-
-              {previewImage && (
-                <ImagePreviewContainer>
-                  <ImagePreview src={previewImage} alt="Vista previa del avatar" />
-                </ImagePreviewContainer>
-              )}
-
-              <SubmitButton type="submit" disabled={isSubmitting}>
-                {userId ? 'Actualizar Perfil' : 'Registrarse'}
-              </SubmitButton>
+                <FullWidthField>
+                  <SubmitButton type="submit" disabled={isSubmitting}>
+                    {userId ? 'Actualizar Perfil' : 'Registrarse'}
+                  </SubmitButton>
+                </FullWidthField>
+              </FormGrid>
             </Form>
-          )}
-        </Formik>
-      </FormContainer>
-    </PageContainer>
-  );
-};
-
-export default UserForm;
+            )}
+            </Formik>
+          </FormContainer>
+        </PageContainer>
+      );
+    };
+    
+    export default UserForm;
