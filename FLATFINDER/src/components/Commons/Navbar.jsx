@@ -1,4 +1,3 @@
-// Importaciones (se mantienen igual)
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -13,8 +12,15 @@ import {
   MenuItem,
   CircularProgress,
   Box,
+  useMediaQuery,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
-import { Home, Add, Favorite, Apartment } from "@mui/icons-material";
+import { Home, Add, Favorite, Apartment, Menu as MenuIcon } from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
 import { storage } from '../../config/firebase';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '../../contexts/authContext';
@@ -24,23 +30,21 @@ function Navbar() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [userAvatar, setUserAvatar] = useState(null);
   const [avatarLoading, setAvatarLoading] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     const fetchAvatar = async () => {
-      console.log("Obteniendo avatar para el usuario:", user);
       setAvatarLoading(true);
       if (user && user.imageUid) {
-        console.log("URL de la foto del usuario:", user.imageUid);
         if (user.imageUid.startsWith('http')) {
-          console.log("Estableciendo URL directa como avatar");
           setUserAvatar(user.imageUid);
         } else {
           try {
-            console.log("Intentando obtener URL de descarga de Firebase Storage");
             const url = await getDownloadURL(ref(storage, user.imageUid));
-            console.log("URL de descarga obtenida:", url);
             setUserAvatar(url);
           } catch (error) {
             console.error("Error al obtener la URL del avatar:", error);
@@ -48,7 +52,6 @@ function Navbar() {
           }
         }
       } else {
-        console.log("No se encontró photoURL, estableciendo avatar como null");
         setUserAvatar(null);
       }
       setAvatarLoading(false);
@@ -65,34 +68,15 @@ function Navbar() {
     setAnchorEl(null);
   };
 
-  const handleNewFlatClick = () => {
-    navigate("/new-flat");
+  const handleDrawerToggle = () => {
+    setDrawerOpen(!drawerOpen);
   };
 
-  const handleHomeClick = () => {
-    navigate("/");
-  };
-
-  const handleFavoriteFlatsClick = () => {
-    navigate("/favorite-flats");
-  };
-
-  const handleMyFlatsClick = () => {
-    navigate("/my-flats");
-  };
-
-  const handleAppIconClick = () => {
-    navigate("/");
-  };
-
-  const handleProfileClick = () => {
-    navigate("/profile");
-    handleMenuClose();
-  };
-
-  const handleAllUsersClick = () => {
-    navigate("/all-users");
-    handleMenuClose();
+  const handleNavigation = (path) => {
+    navigate(path);
+    if (isMobile) {
+      setDrawerOpen(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -103,60 +87,84 @@ function Navbar() {
       console.error("Error al cerrar sesión:", error);
     }
     handleMenuClose();
+    if (isMobile) {
+      setDrawerOpen(false);
+    }
   };
 
   if (!user) {
-    console.log("No se encontró usuario, no se renderiza Navbar");
     return null;
   }
 
-  console.log("Renderizando Navbar para el usuario:", user.email);
+  const menuItems = [
+    { text: 'Nuevo Piso', icon: <Add />, onClick: () => handleNavigation("/new-flat") },
+    { text: 'Pisos Favoritos', icon: <Favorite />, onClick: () => handleNavigation("/favorite-flats") },
+    { text: 'Mis Pisos', icon: <Home />, onClick: () => handleNavigation("/my-flats") },
+  ];
+
+  const drawer = (
+    <Box sx={{ width: 250 }} role="presentation">
+      <List>
+        {menuItems.map((item, index) => (
+          <ListItem button key={index} onClick={item.onClick}>
+            <ListItemIcon>{item.icon}</ListItemIcon>
+            <ListItemText primary={item.text} />
+          </ListItem>
+        ))}
+      </List>
+    </Box>
+  );
 
   return (
     <AppBar position="static" sx={{ backgroundColor: "#fff8ec", color: "#114C5F" }}>
       <Toolbar>
         <IconButton
           edge="start"
-          sx={{ color: "#114C5F" }}
+          sx={{ color: "#114C5F", marginRight: 2 }}
           aria-label="apartment"
-          onClick={handleAppIconClick}
+          onClick={() => handleNavigation("/")}
         >
           <Apartment />
         </IconButton>
         <Typography variant="h6" component="h6" sx={{ flexGrow: 1, fontFamily: "" }}>
-          <Link to="/" style={{ color: "#114C5F", textDecoration: "none" }} onClick={handleHomeClick}>
+          <Link to="/" style={{ color: "#114C5F", textDecoration: "none" }} onClick={() => handleNavigation("/")}>
             FLATFINDER
           </Link>
         </Typography>
-        <Button
-          color="inherit"
-          startIcon={<Add />}
-          sx={{ marginRight: 2, color: "#114C5F" }}
-          onClick={handleNewFlatClick}
-        >
-          Nuevo Piso
-        </Button>
-        <Button
-          color="inherit"
-          startIcon={<Favorite />}
-          sx={{ marginRight: 2, color: "#114C5F" }}
-          onClick={handleFavoriteFlatsClick}
-        >
-          Pisos Favoritos
-        </Button>
-        <Button
-          color="inherit"
-          startIcon={<Home />}
-          sx={{ marginRight: 2, color: "#114C5F" }}
-          onClick={handleMyFlatsClick}
-        >
-          Mis Pisos
-        </Button>
+        
+        {isMobile ? (
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            edge="start"
+            onClick={handleDrawerToggle}
+            sx={{ mr: 2, display: { sm: 'none' } }}
+          >
+            <MenuIcon />
+          </IconButton>
+        ) : (
+          <>
+            {menuItems.map((item, index) => (
+              <Button
+                key={index}
+                color="inherit"
+                startIcon={item.icon}
+                sx={{ marginRight: 2, color: "#114C5F" }}
+                onClick={item.onClick}
+              >
+                {item.text}
+              </Button>
+            ))}
+          </>
+        )}
+
         <NotificationMessages />
-        <Box sx={{ display: 'flex', alignItems: 'center', marginRight: 2 }}>
-          <Typography variant="body1" sx={{ marginRight: 1 }}>
-            Hola, {user.firstName} {user.lastName}
-          </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: 2 }}>
+          {!isMobile && (
+            <Typography variant="body2" sx={{ marginRight: 1 }}>
+              Hola, {user.firstName}
+            </Typography>
+          )}
           <IconButton
             edge="end"
             sx={{ color: "#114C5F" }}
@@ -177,13 +185,20 @@ function Navbar() {
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
         >
-          <MenuItem onClick={handleProfileClick}>Perfil</MenuItem>
+          <MenuItem onClick={() => { handleNavigation("/profile"); handleMenuClose(); }}>Perfil</MenuItem>
           {user.rol === 'admin' && (
-            <MenuItem onClick={handleAllUsersClick}>Todos los Usuarios</MenuItem>
+            <MenuItem onClick={() => { handleNavigation("/all-users"); handleMenuClose(); }}>Todos los Usuarios</MenuItem>
           )}
           <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
         </Menu>
       </Toolbar>
+      <Drawer
+        anchor="left"
+        open={drawerOpen}
+        onClose={handleDrawerToggle}
+      >
+        {drawer}
+      </Drawer>
     </AppBar>
   );
 }
