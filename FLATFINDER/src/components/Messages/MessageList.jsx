@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Avatar, Button, IconButton } from '@mui/material';
+import { Box, Typography, Avatar, IconButton, Button } from '@mui/material';
 import ReplyIcon from '@mui/icons-material/Reply';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { subscribeToMessages } from '../../services/firebasemessages';
 import { getDownloadURL, ref } from 'firebase/storage';
 import { storage } from '../../config/firebase';
@@ -8,7 +10,7 @@ import { storage } from '../../config/firebase';
 const MessagesList = ({ flatId, currentUser, flatOwner, onReply }) => {
   const [messages, setMessages] = useState([]);
   const [avatarUrls, setAvatarUrls] = useState({});
-  const [expandedReplies, setExpandedReplies] = useState({});
+  const [expandedThreads, setExpandedThreads] = useState({});
 
   useEffect(() => {
     const unsubscribe = subscribeToMessages(flatId, (newMessages) => {
@@ -34,32 +36,43 @@ const MessagesList = ({ flatId, currentUser, flatOwner, onReply }) => {
       }
       setAvatarUrls(prevUrls => ({ ...prevUrls, ...urls }));
     };
-
     fetchAvatarUrls();
   }, [messages]);
 
-  const toggleReplies = (messageId) => {
-    setExpandedReplies(prev => ({
-      ...prev,
-      [messageId]: !prev[messageId]
-    }));
-  };
-
   const canReply = (msg) => {
     return (
-      currentUser.id === flatOwner || // Flat owner can reply to all
-      (msg.userId === flatOwner && msg.replyTo === currentUser.id) // Message owner can reply to flat owner's response
+      currentUser.id === flatOwner ||
+      msg.userId === currentUser.id ||
+      (msg.userId === flatOwner && msg.replyTo === currentUser.id)
     );
   };
 
-  const renderMessage = (msg, isReply = false) => {
+  const toggleThread = (msgId) => {
+    setExpandedThreads(prev => ({
+      ...prev,
+      [msgId]: !prev[msgId]
+    }));
+  };
+
+  const getReplyCount = (msgId) => {
+    return messages.filter(msg => msg.replyTo === msgId).length;
+  };
+
+  const renderMessage = (msg, depth = 0) => {
     const userName = msg.userName || 'Usuario Anónimo';
     const avatarLetter = userName.charAt(0).toUpperCase();
     const avatarUrl = avatarUrls[msg.imageUid];
-    const replies = messages.filter(m => m.replyTo === msg.id);
+    const replyCount = getReplyCount(msg.id);
+    const isExpanded = expandedThreads[msg.id];
 
     return (
-      <Box key={msg.id} sx={{ display: 'flex', flexDirection: 'column', mb: 2, ml: isReply ? 4 : 0 }}>
+      <Box key={msg.id} sx={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        mb: 2, 
+        pl: depth * 4,
+        borderLeft: depth > 0 ? '2px solid #e0e0e0' : 'none'
+      }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
           <Avatar src={avatarUrl} alt={userName} sx={{ mr: 1, width: 24, height: 24 }}>
             {avatarLetter}
@@ -70,6 +83,16 @@ const MessagesList = ({ flatId, currentUser, flatOwner, onReply }) => {
               <ReplyIcon fontSize="small" />
             </IconButton>
           )}
+          {replyCount > 0 && (
+            <Button
+              size="small"
+              onClick={() => toggleThread(msg.id)}
+              startIcon={isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              sx={{ ml: 1 }}
+            >
+              {replyCount} {replyCount === 1 ? 'respuesta' : 'respuestas'}
+            </Button>
+          )}
         </Box>
         <Box sx={{ bgcolor: '#f0f0f0', borderRadius: 2, p: 1, maxWidth: '80%', alignSelf: 'flex-start' }}>
           <Typography variant="body2">{msg.text}</Typography>
@@ -77,28 +100,26 @@ const MessagesList = ({ flatId, currentUser, flatOwner, onReply }) => {
         <Typography variant="caption" sx={{ mt: 0.5 }}>
           {msg.createdAt?.toDate().toLocaleString() || 'Fecha desconocida'}
         </Typography>
-        
-        {!isReply && replies.length > 0 && (
-          <Button 
-            onClick={() => toggleReplies(msg.id)} 
-            sx={{ alignSelf: 'flex-start', mt: 1, color: 'primary.main', textTransform: 'none' }}
-          >
-            {expandedReplies[msg.id] ? 'Ocultar' : `${replies.length} respuestas`}
-          </Button>
-        )}
-        
-        {!isReply && expandedReplies[msg.id] && (
-          <Box sx={{ mt: 1 }}>
-            {replies.map(reply => renderMessage(reply, true))}
-          </Box>
-        )}
+        {isExpanded && renderReplies(msg.id, depth + 1)}
       </Box>
     );
   };
 
+  const renderReplies = (parentId, depth) => {
+    const replies = messages
+      .filter(msg => msg.replyTo === parentId)
+      .sort((a, b) => (a.createdAt?.toDate() || 0) - (b.createdAt?.toDate() || 0));
+    return replies.map(reply => renderMessage(reply, depth));
+  };
+
+  // Ordenar mensajes principales de más reciente a más antiguo
+  const sortedMessages = messages
+    .filter(msg => !msg.replyTo)
+    .sort((a, b) => (b.createdAt?.toDate() || 0) - (a.createdAt?.toDate() || 0));
+
   return (
     <Box sx={{ width: '100%', bgcolor: 'background.paper', p: 2 }}>
-      {messages.filter(msg => !msg.replyTo).map(msg => renderMessage(msg))}
+      {sortedMessages.map(msg => renderMessage(msg))}
     </Box>
   );
 };
