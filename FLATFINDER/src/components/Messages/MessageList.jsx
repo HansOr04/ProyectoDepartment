@@ -40,11 +40,16 @@ const MessagesList = ({ flatId, currentUser, flatOwner, onReply }) => {
   }, [messages]);
 
   const canReply = (msg) => {
-    return (
-      currentUser.id === flatOwner ||
-      msg.userId === currentUser.id ||
-      (msg.userId === flatOwner && msg.replyTo === currentUser.id)
-    );
+    if (!currentUser || !currentUser.id) return false;
+    
+    // Si es un mensaje principal (no es una respuesta)
+    if (!msg.replyTo) {
+      return msg.userId === currentUser.id;
+    }
+    
+    // Si es una respuesta, buscar el mensaje original
+    const originalMessage = messages.find(m => m.id === msg.replyTo);
+    return originalMessage && originalMessage.userId === currentUser.id;
   };
 
   const toggleThread = (msgId) => {
