@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Avatar, Button } from '@mui/material';
+import { Box, Typography, Avatar, Button, IconButton } from '@mui/material';
+import ReplyIcon from '@mui/icons-material/Reply';
 import { subscribeToMessages } from '../../services/firebasemessages';
 import { getDownloadURL, ref } from 'firebase/storage';
 import { storage } from '../../config/firebase';
@@ -44,6 +45,13 @@ const MessagesList = ({ flatId, currentUser, flatOwner, onReply }) => {
     }));
   };
 
+  const canReply = (msg) => {
+    return (
+      currentUser.id === flatOwner || // Flat owner can reply to all
+      (msg.userId === flatOwner && msg.replyTo === currentUser.id) // Message owner can reply to flat owner's response
+    );
+  };
+
   const renderMessage = (msg, isReply = false) => {
     const userName = msg.userName || 'Usuario Anónimo';
     const avatarLetter = userName.charAt(0).toUpperCase();
@@ -57,6 +65,11 @@ const MessagesList = ({ flatId, currentUser, flatOwner, onReply }) => {
             {avatarLetter}
           </Avatar>
           <Typography variant="subtitle2" component="span">{userName}</Typography>
+          {canReply(msg) && (
+            <IconButton size="small" onClick={() => onReply(msg)} sx={{ ml: 1 }}>
+              <ReplyIcon fontSize="small" />
+            </IconButton>
+          )}
         </Box>
         <Box sx={{ bgcolor: '#f0f0f0', borderRadius: 2, p: 1, maxWidth: '80%', alignSelf: 'flex-start' }}>
           <Typography variant="body2">{msg.text}</Typography>
