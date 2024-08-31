@@ -144,7 +144,7 @@ const UserForm = ({ userId = null }) => {
               email: userData.email,
               firstName: userData.firstName,
               lastName: userData.lastName,
-              birthDate: userData.birthDate ? new Date(userData.birthDate) : null,
+              birthDate: userData.birthDate ? new Date(userData.birthDate.seconds * 1000) : null,
             });
             if (userData.imageUid) {
               try {
@@ -166,20 +166,20 @@ const UserForm = ({ userId = null }) => {
 
   const validationSchema = Yup.object().shape({
     email: Yup.string().email('Email inválido').required('El email es requerido'),
-    password: userId 
+    password: userId
       ? Yup.string()
       : Yup.string()
-          .min(6, 'La contraseña debe tener al menos 6 caracteres')
-          .matches(
-            /^(?=.*[!@#$%^&*])/,
-            'La contraseña debe incluir al menos un caracter especial'
-          )
-          .required('La contraseña es requerida'),
+        .min(6, 'La contraseña debe tener al menos 6 caracteres')
+        .matches(
+          /^(?=.*[!@#$%^&*])/,
+          'La contraseña debe incluir al menos un caracter especial'
+        )
+        .required('La contraseña es requerida'),
     confirmPassword: userId
       ? Yup.string()
       : Yup.string()
-          .oneOf([Yup.ref('password'), null], 'Las contraseñas deben coincidir')
-          .required('Confirmar la contraseña es requerido'),
+        .oneOf([Yup.ref('password'), null], 'Las contraseñas deben coincidir')
+        .required('Confirmar la contraseña es requerido'),
     firstName: Yup.string()
       .min(2, 'El nombre debe tener al menos 2 caracteres')
       .required('El nombre es requerido'),
@@ -189,16 +189,15 @@ const UserForm = ({ userId = null }) => {
     birthDate: Yup.date()
       .nullable()
       .required('La fecha de nacimiento es requerida')
-      .test('age', 'Debes tener entre 18 y 120 años', function(birthDate) {
+      .test('age', 'Debes tener entre 18 y 120 años', function (birthDate) {
         if (!birthDate) return false;
         const cutoff = new Date();
         const age = cutoff.getFullYear() - birthDate.getFullYear();
         return age >= 18 && age <= 120;
       }),
     avatar: Yup.mixed()
-      .required('La imagen de perfil es requerida')
       .test('fileSize', 'Archivo demasiado grande', (value) => {
-        if (!value) return false;
+        if (!value) return true; // Allow empty value
         return value && value.size <= 2000000;
       })
   });
@@ -217,7 +216,7 @@ const UserForm = ({ userId = null }) => {
         // Para la creación de un nuevo usuario
         const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
         userId = userCredential.user.uid;
-        
+
         await updateProfile(userCredential.user, {
           displayName: `${values.firstName} ${values.lastName}`
         });
@@ -276,7 +275,7 @@ const UserForm = ({ userId = null }) => {
 
                 {!userId && (
                   <>
-                    <Field name="password" type="password" as={StyledField} placeholder="Contraseña" /> 
+                    <Field name="password" type="password" as={StyledField} placeholder="Contraseña" />
                     <Field name="confirmPassword" type="password" as={StyledField} placeholder="Confirmar Contraseña" />
                     <ErrorMessage name="password" component={StyledErrorMessage} />
                     <ErrorMessage name="confirmPassword" component={StyledErrorMessage} />
@@ -294,6 +293,7 @@ const UserForm = ({ userId = null }) => {
                       label="Fecha de Nacimiento"
                       value={values.birthDate}
                       onChange={(date) => setFieldValue('birthDate', date)}
+                      renderInput={(params) => <TextField {...params} fullWidth />}
                       slotProps={{
                         textField: {
                           fullWidth: true,
@@ -349,11 +349,11 @@ const UserForm = ({ userId = null }) => {
                 </FullWidthField>
               </FormGrid>
             </Form>
-            )}
-            </Formik>
-          </FormContainer>
-        </PageContainer>
-      );
-    };
-    
-    export default UserForm;
+          )}
+        </Formik>
+      </FormContainer>
+    </PageContainer>
+  );
+};
+
+export default UserForm;
