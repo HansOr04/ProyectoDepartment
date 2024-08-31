@@ -42,6 +42,9 @@ const MessagesList = ({ flatId, currentUser, flatOwner, onReply }) => {
   const canReply = (msg) => {
     if (!currentUser || !currentUser.id) return false;
     
+    // El dueño del flat puede responder a cualquier mensaje
+    if (currentUser.id === flatOwner) return true;
+    
     // Si es un mensaje principal (no es una respuesta)
     if (!msg.replyTo) {
       return msg.userId === currentUser.id;
