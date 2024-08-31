@@ -10,7 +10,7 @@ const ContainerImage = styled.div`
   position: relative;
 
   @media (max-width: 768px) {
-    height: 50vh; /* Ajusta la altura en pantallas más pequeñas */
+    height: 50vh;
   }
 `;
 
@@ -35,8 +35,8 @@ const ContentWrapper = styled.div`
   width: 50%;
 
   @media (max-width: 768px) {
-    width: 80%; /* Aumenta el ancho en pantallas más pequeñas */
-    left: 5%; /* Ajusta la posición */
+    width: 80%;
+    left: 5%;
   }
 `;
 
@@ -47,7 +47,7 @@ const Title = styled.h2`
   text-align: left;
 
   @media (max-width: 768px) {
-    font-size: 2rem; /* Reduce el tamaño de la fuente en pantallas más pequeñas */
+    font-size: 2rem;
   }
 `;
 
@@ -58,7 +58,7 @@ const ButtonWrapper = styled.div`
   margin-top: 2rem;
 
   @media (max-width: 768px) {
-    justify-content: center; /* Centra los botones en pantallas más pequeñas */
+    justify-content: center;
   }
 `;
 
@@ -68,8 +68,6 @@ const Button = styled.button`
   padding: 1rem 2rem;
   border: none;
   border-radius: 0.5rem;
-  margin-left: 33em;
-
   cursor: pointer;
   font-size: 1.2rem;
   font-weight: bold;
@@ -80,9 +78,16 @@ const Button = styled.button`
     transform: scale(1.05);
   }
 
+  @media (min-width: 769px) {
+    margin-left: 0;
+    max-width: 200px;
+    width: 100%;
+  }
+
   @media (max-width: 768px) {
-    margin-left: 0; /* Elimina el margen en pantallas más pequeñas */
-    margin-right: 1rem; /* Agrega un margen a la derecha para separación */
+    margin-left: 0;
+    margin-right: 1rem;
+    width: auto;
   }
 `;
 
