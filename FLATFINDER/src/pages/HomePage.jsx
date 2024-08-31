@@ -208,18 +208,6 @@ function HomePage() {
               </Tooltip>
             </Box>
           </Grid>
-          {/* Botón de búsqueda */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Button 
-              variant="contained" 
-              color="primary" 
-              fullWidth 
-              startIcon={<SearchOutlined />}
-              onClick={scrollToFlatList}
-            >
-              Buscar
-            </Button>
-          </Grid>
         </Grid>
       </Paper>
 
