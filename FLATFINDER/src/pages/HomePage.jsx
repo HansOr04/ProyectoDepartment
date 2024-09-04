@@ -5,7 +5,7 @@ import FlatView from '../components/Flats/FlatView';
 import { Box, Grid, Typography, Select, MenuItem, TextField, Skeleton, Paper, InputAdornment, IconButton, Tooltip } from '@mui/material';
 import { getAllFlatsWithOwners, addToFavorites, removeFavorite } from '../services/firebaseFlats';
 import { useAuth } from '../contexts/authContext';
-import { SearchOutlined, LocationCity, AttachMoney, SquareFoot, DeleteOutline } from '@mui/icons-material';
+import {  LocationCity, AttachMoney, SquareFoot, DeleteOutline } from '@mui/icons-material';
 
 function HomePage() {
   // Estados para los filtros y datos

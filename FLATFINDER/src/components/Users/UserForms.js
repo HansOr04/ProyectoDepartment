@@ -1,9 +1,7 @@
-// StyledComponents.js
 import styled from 'styled-components';
-import { Field, ErrorMessage } from 'formik';
-import DatePicker from 'react-datepicker';
 
-export const PageContainer = styled.div`
+// Componentes estilizados
+const PageContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -11,7 +9,7 @@ export const PageContainer = styled.div`
   background: linear-gradient(135deg, #e0f7fa 0%, #f3e5f5 100%);
 `;
 
-export const FormContainer = styled.div`
+const FormContainer = styled.div`
   background-color: white;
   border-radius: 20px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
@@ -20,109 +18,106 @@ export const FormContainer = styled.div`
   max-width: 500px;
 `;
 
-export const Logo = styled.div`
+const Logo = styled.div`
   display: flex;
   align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
   font-size: 24px;
-  color: #f06292;  // Cambia el color si es necesario
-  margin-bottom: 20px;
-
-  svg {
-    margin-right: 10px;  // Espacio entre el SVG y el texto
-  }
+  color: #f06292;
 `;
 
-export const Title = styled.h2`
-  font-size: 32px;
-  margin-bottom: 30px;
-`;
-
-export const StyledField = styled(Field)`
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 20px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  &:focus {
-    outline: none;
-    border-color: #f06292;
-  }
-`;
-
-export const StyledErrorMessage = styled(ErrorMessage)`
-  color: #f44336;
-  font-size: 14px;
-  margin-top: -15px;
-  margin-bottom: 15px;
-`;
-
-export const StyledDatePicker = styled(DatePicker)`
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 20px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  &:focus {
-    outline: none;
-    border-color: #f06292;
-  }
-`;
-
-export const SubmitButton = styled.button`
-  background-color: #f06292;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  &:hover {
-    background-color: #ec407a;
-  }
-  &:disabled {
-    background-color: #e0e0e0;
-    cursor: not-allowed;
-  }
-`;
-
-export const FileInputContainer = styled.div`
-  margin-bottom: 20px;
-`;
-
-export const FileInputLabel = styled.label`
-  display: inline-block;
-  background-color: #f06292;
-  color: white;
-  padding: 10px 15px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-
-  &:hover {
-    background-color: #ec407a;
-  }
-`;
-
-export const HiddenFileInput = styled.input`
-  display: none;
-`;
-
-export const FileName = styled.span`
-  margin-left: 10px;
-  font-size: 14px;
-`;
-
-export const ImagePreviewContainer = styled.div`
+const Title = styled.h2`
+  font-size: 24px;
   margin-bottom: 20px;
   text-align: center;
 `;
 
-export const ImagePreview = styled.img`
-  max-width: 200px;
-  max-height: 200px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+const StyledField = styled.input`
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 5px;
+  border: 1px solid ${props => props.error ? 'red' : '#ddd'};
+  border-radius: 4px;
 `;
+
+const StyledErrorMessage = styled.div`
+  color: red;
+  font-size: 12px;
+  margin-bottom: 10px;
+  height: 15px; // Fixed height to prevent layout shifts
+`;
+
+const SubmitButton = styled.button`
+  width: 100%;
+  padding: 10px;
+  background-color: #f06292;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  &:disabled {
+    background-color: #ddd;
+  }
+`;
+
+const FileInputContainer = styled.div`
+  margin-bottom: 15px;
+`;
+
+const FileInputLabel = styled.label`
+  display: inline-block;
+  padding: 10px 15px;
+  background-color: #f06292;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+`;
+
+const HiddenFileInput = styled.input`
+  display: none;
+`;
+
+const FileName = styled.span`
+  margin-left: 10px;
+`;
+
+const ImagePreviewContainer = styled.div`
+  margin-bottom: 15px;
+`;
+
+const ImagePreview = styled.img`
+  max-width: 300px;
+  max-height: 300px;
+  width: auto;
+  height: auto;
+  border-radius: 4px;
+  align-content: center;
+`;
+
+const FormGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+`;
+
+const FullWidthField = styled.div`
+  grid-column: 1 / -1;
+`;
+export {
+    PageContainer,
+    FormContainer,
+    Logo,
+    Title,
+    StyledField,
+    StyledErrorMessage,
+    SubmitButton,
+    FileInputContainer,
+    FileInputLabel,
+    HiddenFileInput,
+    FileName,
+    ImagePreviewContainer,
+    ImagePreview,
+    FormGrid,
+    FullWidthField
+}

@@ -1,6 +1,6 @@
 // Importaciones necesarias de Firebase
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { db, storage } from "../config/firebase";
+import { collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { db } from "../config/firebase";
 
 // Función para enviar un mensaje
 export const sendMessage = async (flatId, messageData) => {

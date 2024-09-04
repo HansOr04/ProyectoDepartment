@@ -1,13 +1,14 @@
 // Importaciones necesarias de React y react-router-dom
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 // Importaciones de componentes de Material-UI
 import { 
-  TextField, 
-  Checkbox, 
-  FormControlLabel, 
-  Button, 
-  Grid, 
+  TextField,
+  Checkbox,
+  FormControlLabel,
+  Button,
+  Grid,
   Typography,
   CircularProgress,
   Paper,
@@ -16,10 +17,12 @@ import {
   IconButton
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+
 // Importaciones para el selector de fecha
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+
 // Importaciones de servicios y contextos personalizados
 import { createFlat, updateFlat, uploadFlatImage, getFlatByID } from '../../services/firebaseFlats';
 import { useAuth } from '../../contexts/authContext';
@@ -28,9 +31,10 @@ import { useAuth } from '../../contexts/authContext';
 const FlatForm = ({ flatId }) => {
   // Obtiene el usuario del contexto de autenticación
   const { user } = useAuth();
+
   // Hook para la navegación programática
   const navigate = useNavigate();
-  
+
   // Estado para los datos del formulario
   const [formData, setFormData] = useState({
     city: '',
@@ -60,7 +64,6 @@ const FlatForm = ({ flatId }) => {
           if (flatData) {
             setFormData({
               ...flatData,
-              // Convierte la fecha de Firestore a objeto Date de JavaScript
               dateAvailable: flatData.dateAvailable ? new Date(flatData.dateAvailable.seconds * 1000) : null,
             });
           }
@@ -78,12 +81,23 @@ const FlatForm = ({ flatId }) => {
     loadFlatData();
   }, [flatId]);
 
-  // Manejador para cambios en los campos del formulario
+  // Nueva función auxiliar para capitalizar la primera letra
+  const capitalizeFirstLetter = (string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+  };
+
+  // Manejador modificado para cambios en los campos del formulario
   const handleChange = (event) => {
     const { name, value, checked, type } = event.target;
+    let newValue = value;
+
+    if (name === 'city' || name === 'country') {
+      newValue = capitalizeFirstLetter(value);
+    }
+
     setFormData(prevState => ({
       ...prevState,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : newValue
     }));
   };
 

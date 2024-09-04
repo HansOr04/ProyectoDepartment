@@ -5,7 +5,7 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/authContext';
 import { db } from '../../config/firebase';
-import { collection, query, where, onSnapshot, updateDoc, doc, orderBy, limit } from 'firebase/firestore';
+import { collection, query, onSnapshot, updateDoc, doc, orderBy, limit } from 'firebase/firestore';
 import { getFlatsByUser } from '../../services/firebaseFlats';
 
 // Definición del componente NotificationMessages

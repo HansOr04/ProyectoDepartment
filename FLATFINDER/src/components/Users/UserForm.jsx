@@ -1,251 +1,167 @@
-import React, { useState, useEffect } from 'react';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
-import { TextField } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
-import { ref, getDownloadURL } from 'firebase/storage';
-import { auth, db, storage } from '../../config/firebase';
-import { uploadUserImage } from '../../services/firebase';
-import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+// Importamos los módulos necesarios desde React, Formik, Yup, Material-UI, y Firebase
+import React, { useState, useEffect } from 'react'; // React, useState y useEffect son hooks para manejar el estado y los efectos secundarios.
+import { Formik, Form, Field, ErrorMessage } from 'formik'; // Formik se utiliza para manejar formularios y validaciones.
+import * as Yup from 'yup'; // Yup es una biblioteca de validación de esquemas que se utiliza junto con Formik.
+import { TextField } from '@mui/material'; // TextField es un componente de Material-UI para crear campos de entrada.
+import { DatePicker } from '@mui/x-date-pickers/DatePicker'; // DatePicker es un componente de Material-UI para seleccionar fechas.
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'; // Adaptador para usar funciones de fechas en DatePicker.
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'; // Proveedor para localización en DatePicker.
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'; // Métodos de Firebase para crear usuarios y actualizar perfiles.
+import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore'; // Métodos de Firebase para manejar documentos en Firestore.
+import { ref, getDownloadURL } from 'firebase/storage'; // Métodos de Firebase para manejar archivos en Firebase Storage.
+import { auth, db, storage } from '../../config/firebase'; // Importamos la configuración de Firebase desde un archivo local.
+import { uploadUserImage } from '../../services/firebase'; // Función personalizada para subir imágenes de usuario a Firebase.
+import { useNavigate } from 'react-router-dom'; // Hook de React Router para la navegación.
 
-// Componentes estilizados
-const PageContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #e0f7fa 0%, #f3e5f5 100%);
-`;
-
-const FormContainer = styled.div`
-  background-color: white;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  padding: 40px;
-  width: 100%;
-  max-width: 500px;
-`;
-
-const Logo = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-  font-size: 24px;
-  color: #f06292;
-`;
-
-const Title = styled.h2`
-  font-size: 24px;
-  margin-bottom: 20px;
-  text-align: center;
-`;
-
-const StyledField = styled.input`
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-`;
-
-const StyledErrorMessage = styled.div`
-  color: red;
-  font-size: 12px;
-  margin-top: -10px;
-  margin-bottom: 10px;
-`;
-
-const SubmitButton = styled.button`
-  width: 100%;
-  padding: 10px;
-  background-color: #f06292;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  &:disabled {
-    background-color: #ddd;
-  }
-`;
-
-const FileInputContainer = styled.div`
-  margin-bottom: 15px;
-`;
-
-const FileInputLabel = styled.label`
-  display: inline-block;
-  padding: 10px 15px;
-  background-color: #f06292;
-  color: white;
-  border-radius: 4px;
-  cursor: pointer;
-`;
-
-const HiddenFileInput = styled.input`
-  display: none;
-`;
-
-const FileName = styled.span`
-  margin-left: 10px;
-`;
-
-const ImagePreviewContainer = styled.div`
-  margin-bottom: 15px;
-`;
-
-const ImagePreview = styled.img`
-  max-width: 300px;
-  max-height: 300px;
-  width: auto;
-  height: auto;
-  border-radius: 4px;
-  align-content: center;
-`;
-
-const FormGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-`;
-
-const FullWidthField = styled.div`
-  grid-column: 1 / -1;
-`;
+// Importamos componentes estilizados personalizados
+import {
+  PageContainer, FormContainer, Logo, Title, StyledField, StyledErrorMessage,
+  SubmitButton, FileInputContainer, FileInputLabel, HiddenFileInput, FileName,
+  ImagePreviewContainer, ImagePreview, FormGrid, FullWidthField
+} from './UserForms'; // Importamos componentes estilizados desde un archivo local.
 
 // Componente principal UserForm
 const UserForm = ({ userId = null }) => {
+  // Definimos el estado inicial del formulario, incluyendo campos como email, contraseña, nombre, etc.
   const [initialValues, setInitialValues] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    firstName: '',
-    lastName: '',
-    birthDate: null,
-    avatar: null
+    email: '', // Campo para el email del usuario
+    password: '', // Campo para la contraseña
+    confirmPassword: '', // Campo para confirmar la contraseña
+    firstName: '', // Campo para el nombre del usuario
+    lastName: '', // Campo para el apellido del usuario
+    birthDate: null, // Campo para la fecha de nacimiento
+    avatar: null // Campo para la imagen del avatar
   });
+
+  // Estado para almacenar la vista previa de la imagen del avatar
   const [previewImage, setPreviewImage] = useState(null);
+
+  // Hook de navegación para redirigir al usuario después de completar acciones
   const navigate = useNavigate();
 
+  // useEffect para obtener datos del usuario si se proporciona un userId
   useEffect(() => {
     const fetchUserData = async () => {
-      if (userId) {
+      if (userId) { // Si existe un userId, buscamos los datos del usuario
         try {
-          const userDoc = await getDoc(doc(db, 'users', userId));
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
+          const userDoc = await getDoc(doc(db, 'users', userId)); // Obtenemos el documento del usuario desde Firestore
+          if (userDoc.exists()) { // Si el documento existe
+            const userData = userDoc.data(); // Obtenemos los datos del documento
             setInitialValues({
-              ...initialValues,
-              email: userData.email,
-              firstName: userData.firstName,
-              lastName: userData.lastName,
-              birthDate: userData.birthDate ? new Date(userData.birthDate.seconds * 1000) : null,
+              ...initialValues,///se hace una copia de los valores o parametros de initialvalues y despues se sobreescribe con los datos del usuario
+              email: userData.email, // Establecemos el email del usuario
+              firstName: userData.firstName, // Establecemos el nombre del usuario
+              lastName: userData.lastName, // Establecemos el apellido del usuario
+              birthDate: userData.birthDate ? new Date(userData.birthDate.seconds * 1000) : null, // Convertimos la fecha de nacimiento desde Firebase Timestamp
             });
-            if (userData.imageUid) {
+            if (userData.imageUid) { // Si el usuario tiene una imagen de avatar
               try {
-                const imageUrl = await getDownloadURL(ref(storage, userData.imageUid));
-                setPreviewImage(imageUrl);
+                const imageUrl = await getDownloadURL(ref(storage, userData.imageUid)); // Obtenemos la URL de la imagen desde Firebase Storage
+                setPreviewImage(imageUrl); // Establecemos la vista previa de la imagen
               } catch (error) {
-                console.error('Error fetching image URL:', error);
+                console.error('Error fetching image URL:', error); // Mostramos error si no se puede obtener la URL de la imagen
               }
             }
           }
         } catch (error) {
-          console.error('Error fetching user data:', error);
+          console.error('Error fetching user data:', error); // Mostramos error si falla la obtención de datos del usuario
         }
       }
     };
 
-    fetchUserData();
-  }, [userId]);
+    fetchUserData(); // Llamamos a la función para obtener los datos del usuario
+  }, [userId]); // Dependencia: se ejecuta cuando cambia userId
 
+  // Esquema de validación de Yup para validar los datos del formulario
   const validationSchema = Yup.object().shape({
-    email: Yup.string().email('Email inválido').required('El email es requerido'),
+    email: Yup.string().email('Email inválido').required('El email es requerido'), // Validamos el email
     password: userId
-      ? Yup.string()
+      ? Yup.string() // Si estamos actualizando un usuario, la contraseña no es requerida
       : Yup.string()
-        .min(6, 'La contraseña debe tener al menos 6 caracteres')
-        .matches(
-          /^(?=.*[!@#$%^&*])/,
-          'La contraseña debe incluir al menos un caracter especial'
-        )
-        .required('La contraseña es requerida'),
+        .min(6, 'La contraseña debe tener al menos 6 caracteres') // La contraseña debe tener al menos 6 caracteres
+        .matches(/^(?=.*[!@#$%^&*])/, 'La contraseña debe incluir al menos un caracter especial') // Debe incluir un caracter especial
+        .matches(/^(?=.*[A-Z])/, 'La contraseña debe incluir al menos una letra mayúscula') // Debe incluir una letra mayúscula
+        .required('La contraseña es requerida'), // La contraseña es requerida para nuevos usuarios
     confirmPassword: userId
-      ? Yup.string()
+      ? Yup.string() // Si estamos actualizando, no necesitamos confirmar la contraseña
       : Yup.string()
-        .oneOf([Yup.ref('password'), null], 'Las contraseñas deben coincidir')
-        .required('Confirmar la contraseña es requerido'),
+        .oneOf([Yup.ref('password'), null], 'Las contraseñas deben coincidir') // Confirmar que las contraseñas coincidan
+        .required('Confirmar la contraseña es requerido'), // Campo requerido para confirmar la contraseña
     firstName: Yup.string()
-      .min(2, 'El nombre debe tener al menos 2 caracteres')
-      .required('El nombre es requerido'),
+      .min(2, 'El nombre debe tener al menos 2 caracteres') // El nombre debe tener al menos 2 caracteres
+      .required('El nombre es requerido'), // El nombre es un campo requerido
     lastName: Yup.string()
-      .min(2, 'El apellido debe tener al menos 2 caracteres')
-      .required('El apellido es requerido'),
+      .min(2, 'El apellido debe tener al menos 2 caracteres') // El apellido debe tener al menos 2 caracteres
+      .required('El apellido es requerido'), // El apellido es un campo requerido
     birthDate: Yup.date()
       .nullable()
-      .required('La fecha de nacimiento es requerida')
+      .required('La fecha de nacimiento es requerida') // La fecha de nacimiento es requerida
       .test('age', 'Debes tener entre 18 y 120 años', function (birthDate) {
         if (!birthDate) return false;
-        const cutoff = new Date();
-        const age = cutoff.getFullYear() - birthDate.getFullYear();
-        return age >= 18 && age <= 120;
+        const cutoff = new Date(); // Obtenemos la fecha actual
+        const age = cutoff.getFullYear() - birthDate.getFullYear(); // Calculamos la edad
+        return age >= 18 && age <= 120; // Validamos que la edad esté entre 18 y 120 años
       }),
     avatar: Yup.mixed()
       .test('fileSize', 'Archivo demasiado grande', (value) => {
-        if (!value) return true; // Allow empty value
-        return value && value.size <= 2000000;
+        if (!value) return true; // Permitimos que no se seleccione un archivo
+        return value && value.size <= 2000000; // Validamos que el archivo no sea mayor a 2MB
       })
   });
 
+  // Función para manejar el envío del formulario
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
+      // Objeto con los datos del usuario que vamos a guardar en Firestore
       let userDataToSave = {
         firstName: values.firstName,
         lastName: values.lastName,
         birthDate: values.birthDate,
         email: values.email,
-        rol: 'usuario'
+        rol: 'usuario' // Asignamos un rol básico de "usuario"
       };
 
-      if (!userId) {
-        // Para la creación de un nuevo usuario
-        const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
-        userId = userCredential.user.uid;
+      if (!userId) { // Si no existe un userId, creamos un nuevo usuario
+        const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password); // Creamos un nuevo usuario en Firebase Authentication
+        userId = userCredential.user.uid; // Obtenemos el ID del usuario creado
 
         await updateProfile(userCredential.user, {
-          displayName: `${values.firstName} ${values.lastName}`
+          displayName: `${values.firstName} ${values.lastName}` // Actualizamos el perfil del usuario con su nombre completo
         });
 
-        await setDoc(doc(db, 'users', userId), userDataToSave);
+        await setDoc(doc(db, 'users', userId), userDataToSave); // Guardamos los datos del usuario en Firestore
 
-        if (values.avatar) {
-          const imageUid = await uploadUserImage(userId, values.avatar);
-          await updateProfile(auth.currentUser, { photoURL: imageUid });
+        if (values.avatar) { // Si se ha subido una imagen de avatar
+          const imageUid = await uploadUserImage(userId, values.avatar); // Subimos la imagen y obtenemos su UID
+          await updateProfile(auth.currentUser, { photoURL: imageUid }); // Actualizamos el perfil del usuario con la URL de la imagen
         }
 
-        alert('Usuario creado exitosamente');
-        navigate('/'); // Redirigimos a la ruta principal después de crear el usuario
-      } else {
-        // Para actualizar un usuario existente
-        await updateDoc(doc(db, 'users', userId), userDataToSave);
+        alert('Usuario creado exitosamente'); // Mostramos un mensaje de éxito
+        navigate('/'); // Redirigimos a la página principal
+      } else { // Si existe un userId, actualizamos el usuario existente
+        await updateDoc(doc(db, 'users', userId), userDataToSave); // Actualizamos los datos del usuario en Firestore
 
-        if (values.avatar) {
-          const imageUid = await uploadUserImage(userId, values.avatar);
-          await updateProfile(auth.currentUser, { photoURL: imageUid });
+        if (values.avatar) { // Si se ha subido una nueva imagen de avatar
+          const imageUid = await uploadUserImage(userId, values.avatar); // Subimos la nueva imagen
+          await updateProfile(auth.currentUser, { photoURL: imageUid }); // Actualizamos el perfil del usuario con la nueva imagen
         }
 
-        alert('Usuario actualizado exitosamente');
+        alert('Usuario actualizado exitosamente'); // Mostramos un mensaje de éxito
       }
     } catch (error) {
-      console.error('Error al guardar el usuario:', error);
-      alert('Ocurrió un error al guardar el usuario: ' + error.message);
+      console.error('Error al crear/actualizar usuario:', error); // Mostramos error si ocurre
+      alert('Ocurrió un error al procesar la solicitud'); // Mostramos un mensaje de error al usuario
+    } finally {
+      setSubmitting(false); // Terminamos el proceso de envío del formulario
     }
-    setSubmitting(false);
+  };
+
+  // Función para manejar la selección de archivos para la imagen de avatar
+  const handleImageChange = (event) => {
+    const file = event.currentTarget.files[0]; // Obtenemos el archivo seleccionado
+    if (file) {
+      setPreviewImage(URL.createObjectURL(file)); // Establecemos la vista previa de la imagen
+    }
   };
 
   return (
@@ -269,23 +185,62 @@ const UserForm = ({ userId = null }) => {
             <Form>
               <FormGrid>
                 <FullWidthField>
-                  <Field name="email" type="email" as={StyledField} placeholder="Email" disabled={!!userId} />
+                  <Field
+                    name="email"
+                    type="email"
+                    as={StyledField}
+                    placeholder="Email"
+                    disabled={!!userId}
+                    error={touched.email && errors.email}
+                  />
                   <ErrorMessage name="email" component={StyledErrorMessage} />
                 </FullWidthField>
 
                 {!userId && (
                   <>
-                    <Field name="password" type="password" as={StyledField} placeholder="Contraseña" />
-                    <Field name="confirmPassword" type="password" as={StyledField} placeholder="Confirmar Contraseña" />
-                    <ErrorMessage name="password" component={StyledErrorMessage} />
-                    <ErrorMessage name="confirmPassword" component={StyledErrorMessage} />
+                    <div>
+                      <Field
+                        name="password"
+                        type="password"
+                        as={StyledField}
+                        placeholder="Contraseña"
+                        error={touched.password && errors.password}
+                      />
+                      <ErrorMessage name="password" component={StyledErrorMessage} />
+                    </div>
+                    <div>
+                      <Field
+                        name="confirmPassword"
+                        type="password"
+                        as={StyledField}
+                        placeholder="Confirmar Contraseña"
+                        error={touched.confirmPassword && errors.confirmPassword}
+                      />
+                      <ErrorMessage name="confirmPassword" component={StyledErrorMessage} />
+                    </div>
                   </>
                 )}
 
-                <Field name="firstName" type="text" as={StyledField} placeholder="Nombre" />
-                <Field name="lastName" type="text" as={StyledField} placeholder="Apellido" />
-                <ErrorMessage name="firstName" component={StyledErrorMessage} />
-                <ErrorMessage name="lastName" component={StyledErrorMessage} />
+                <div>
+                  <Field
+                    name="firstName"
+                    type="text"
+                    as={StyledField}
+                    placeholder="Nombre"
+                    error={touched.firstName && errors.firstName}
+                  />
+                  <ErrorMessage name="firstName" component={StyledErrorMessage} />
+                </div>
+                <div>
+                  <Field
+                    name="lastName"
+                    type="text"
+                    as={StyledField}
+                    placeholder="Apellido"
+                    error={touched.lastName && errors.lastName}
+                  />
+                  <ErrorMessage name="lastName" component={StyledErrorMessage} />
+                </div>
 
                 <FullWidthField>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>

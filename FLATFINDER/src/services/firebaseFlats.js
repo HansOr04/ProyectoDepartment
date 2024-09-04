@@ -1,17 +1,17 @@
 // Importaciones necesarias de Firebase
-import { 
-    addDoc, 
-    collection, 
-    deleteDoc, 
-    doc, 
-    getDoc, 
-    getDocs, 
-    updateDoc, 
-    query, 
-    where, 
-    arrayUnion, 
-    arrayRemove 
-  } from "firebase/firestore";
+import {
+    addDoc,
+    collection,
+    deleteDoc,
+    doc,
+    getDoc,
+    getDocs,
+    updateDoc,
+    query,
+    where,
+    arrayUnion,
+    arrayRemove
+} from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../config/firebase";
 
@@ -34,17 +34,7 @@ const createFlat = async (flat, userId) => {
     }
 };
 
-// Función para obtener todos los pisos
-const getFlats = async () => {
-    try {
-        const data = await getDocs(flatsCollectionRef);
-        const flats = data.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        return flats;
-    } catch (error) {
-        console.error("Error al obtener los pisos:", error);
-        throw new Error("No se pudieron recuperar los pisos");
-    }
-};
+
 
 // Función para obtener un piso por su ID
 const getFlatByID = async (id) => {
@@ -101,17 +91,7 @@ const uploadFlatImage = async (flatId, imageFile) => {
     }
 };
 
-// Función para vincular un piso a un usuario
-const linkFlatToUser = async (flatId, userId) => {
-    try {
-        const flatRef = doc(db, collectionName, flatId);
-        await updateDoc(flatRef, { ownerId: userId });
-        return true;
-    } catch (error) {
-        console.error("Error al vincular el piso al usuario:", error);
-        throw new Error("No se pudo vincular el piso al usuario");
-    }
-};
+
 
 // Función para obtener los pisos de un usuario específico
 const getFlatsByUser = async (userId) => {
@@ -217,18 +197,17 @@ const getFlatCountByUser = async (userId) => {
 };
 
 // Exportar todas las funciones
-export { 
-    getFlats, 
-    createFlat, 
-    updateFlat, 
-    deleteFlat, 
-    getFlatByID, 
-    uploadFlatImage, 
-    linkFlatToUser, 
+export {
+
+    createFlat,
+    updateFlat,
+    deleteFlat,
+    getFlatByID,
+    uploadFlatImage,
     getFlatsByUser,
     getAllFlatsWithOwners,
     addToFavorites,
     removeFavorite,
     getUserFavorites,
     getFlatCountByUser
-};
+};  
